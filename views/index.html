@@ -1,0 +1,90 @@
+{% extends 'layout.html' %}
+
+{% block head %}
+  {{ head|raw }}
+{% endblock %}
+
+{% block content %}
+
+<p>For npm badges: <b><code>https://nodei.co/npm/&lt;package&gt;.png</code></b></p>
+
+<p>Embed with: <b><code>&lt;a href="https://nodei.co/npm/&lt;package&gt;/"&gt;&lt;img src="https://nodei.co/npm/&lt;package&gt;.png"&gt;&lt;/a&gt;</code></b></p>
+
+<p>Or in Markdown: <b><code>[![NPM](https://nodei.co/npm/&lt;package&gt;.png)](https://nodei.co/npm/&lt;package&gt;/)
+</code></b></p>
+
+<p>Some examples:</p>
+
+<p><a href="https://nodei.co/npm/express.png">https://nodei.co/npm/express.png</a></p>
+<a href="https://nodei.co/npm/express/"><img src="/npm/express.png"></a>
+
+<p><a href="https://nodei.co/npm/level.png">https://nodei.co/npm/level.png</a></p>
+<a href="https://nodei.co/npm/level/"><img src="/npm/level.png"></a>
+
+<p><a href="https://nodei.co/npm/after.png">https://nodei.co/npm/after.png</a></p>
+<a href="https://nodei.co/npm/after/"><img src="/npm/after.png"></a>
+
+<h2>Beta features</h2>
+
+<p>No guarantee anything here will stay or remain in the format below so use with caution</p>
+
+<h3>Download counts</h3>
+
+<p>Add <code>downloads=true</code> to the image URL query string:</p>
+
+<p><a href="https://nodei.co/npm/moment.png">https://nodei.co/npm/moment.png?downloads=true</a></p>
+<a href="https://nodei.co/npm/moment/"><img src="/npm/moment.png?downloads=true"></a>
+
+<h3>Star counts</h3>
+
+<p>Add <code>stars=true</code> to the image URL query string:</p>
+
+<p><a href="https://nodei.co/npm/ecstatic.png">https://nodei.co/npm/ecstatic.png?stars=true</a></p>
+<a href="https://nodei.co/npm/ecstatic/"><img src="/npm/ecstatic.png?stars=true"></a>
+
+<p>Or both stars and downloads:</p>
+
+<p><a href="https://nodei.co/npm/async.png">https://nodei.co/npm/async.png?downloads=true&amp;stars=true</a></p>
+<a href="https://nodei.co/npm/async/"><img src="/npm/async.png?downloads=true&stars=true"></a>
+
+<h3>Compact</h3>
+
+<p>Some people don't really appreciate too much bling, so here's <code>compact=true</code>:</p>
+
+<p><a href="https://nodei.co/npm/through.png">https://nodei.co/npm/through.png?compact=true</a></p>
+<a href="https://nodei.co/npm/through/"><img src="/npm/through.png?compact=true"></a>
+
+<h3>Mini</h3>
+
+<p><i>Really</i> don't like clutter but don't want to be left out? Try <code>mini=true</code>:</p>
+
+<p><a href="https://nodei.co/npm/readable-stream.png">https://nodei.co/npm/readable-stream.png?mini=true</a></p>
+<a href="https://nodei.co/npm/readable-stream/"><img src="/npm/readable-stream.png?mini=true"></a>
+
+<h3>Download histogram badges</h3>
+
+<p>So, we have the download data per-day so why not do something interesting with it?</p>
+
+<p>Embed with: <b><code>&lt;a href="https://nodei.co/npm-dl/&lt;package&gt;/"&gt;&lt;img src="https://nodei.co/npm-dl/&lt;package&gt;.png"&gt;&lt;/a&gt;</code></b></p>
+
+<p>Or in Markdown: <b><code>[![NPM](https://nodei.co/npm-dl/&lt;package&gt;.png)](https://nodei.co/npm-dl/&lt;package&gt;/)
+</code></b></p>
+
+<p><a href="https://nodei.co/npm-dl/xtend.png">https://nodei.co/npm-dl/xtend.png</a></p>
+<a href="https://nodei.co/npm-dl/xtend/"><img src="/npm-dl/xtend.png"></a>
+
+<p>By adding <code>months=X</code> to the query string where <code>X</code> is a number between 1 and 12, you can change the range:</p>
+
+<p><a href="https://nodei.co/npm-dl/xtend.png?months=9">https://nodei.co/npm-dl/xtend.png?months=9</a></p>
+<a href="https://nodei.co/npm-dl/xtend/"><img src="/npm-dl/xtend.png?months=9"></a>
+
+<p><a href="https://nodei.co/npm-dl/xtend.png?months=6">https://nodei.co/npm-dl/xtend.png?months=6</a></p>
+<a href="https://nodei.co/npm-dl/xtend/"><img src="/npm-dl/xtend.png?months=6"></a>
+
+<p><a href="https://nodei.co/npm-dl/xtend.png?months=3">https://nodei.co/npm-dl/xtend.png?months=3</a></p>
+<a href="https://nodei.co/npm-dl/xtend/"><img src="/npm-dl/xtend.png?months=3"></a>
+
+<p><a href="https://nodei.co/npm-dl/xtend.png?months=1">https://nodei.co/npm-dl/xtend.png?months=1</a></p>
+<a href="https://nodei.co/npm-dl/xtend/"><img src="/npm-dl/xtend.png?months=1"></a>
+
+{% endblock %}

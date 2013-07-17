@@ -1,0 +1,30 @@
+{
+  "name": "nodei.co",
+  "version": "0.0.0",
+  "description": "https://nodei.co - Node.js badges, that's all",
+  "main": "index.js",
+  "author": "Rod Vagg <r@va.gg> (https://github.com/rvagg)",
+  "dependencies": {
+    "swig": "~0.13.5",
+    "canvas": "~1.0.3",
+    "splink-smvc": "~0.0.1",
+    "hyperquest": "~0.1.7",
+    "bl": "~0.1.1",
+    "moment": "~2.1.0",
+    "flake": "~0.5.0",
+    "level-live-stream": "~1.4.4",
+    "level-sublevel": "~4.7.1",
+    "level": "~0.10.0",
+    "npm-download-counts": "~0.0.0",
+    "restify-plugin-pre-path": "~2.0.2",
+    "restify-plugin-pre-pause": "~2.0.2",
+    "restify-plugin-gzip": "~2.0.2",
+    "restify-request": "~2.0.2",
+    "restify-plugin-query": "~2.0.2",
+    "humanize-number": "~0.0.1",
+    "level-ttl-cache": "~0.1.0",
+    "memoize-async": "~0.0.0",
+    "level-ttl": "~0.4.0"
+  },
+  "private": true
+}
