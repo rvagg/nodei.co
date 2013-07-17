@@ -1,3 +1,17 @@
+// No, this isn't using Restify, it's only using some restify plugins.
+// It uses SplinkSMVC which as yet doesn't have any documentation,
+// https://github.com/rvagg/splink-smvc so you'll have to make do by reading
+// the source here and trying to understand what's going on.
+// SplinkSMVC is built on Splink an IoC/DI container that does have a little
+// bit of documentation (even if some of it is outdated)
+// https://github.com/rvagg/splink
+
+// Swig for templating, st for static file serving, Director for routing
+// Restify plugins for some basic http tasks like query processing and
+// body parsing
+
+// Start here, then look in lib/controllers/ and lib/filters/ and go from there
+
 const path        = require('path')
     , fs          = require('fs')
     , splinksmvc  = require('splink-smvc')
@@ -29,15 +43,21 @@ if (fs.existsSync(sslKeyFile) && fs.existsSync(sslCertFile)) {
 splinksmvc({
     port     : port
   , ssl      : ssl
+    // directories to scan for auto-loaded components
   , scan     : [
         path.join(__dirname, './lib/controllers/')
       , path.join(__dirname, './lib/filters/')
     ]
+    // passed on to `st` (npm.im/st)
   , 'static' : {
         path       : path.join(__dirname, './public')
       , url        : '/'
       , cache      : isDev ? false : {}
     }
+    // view components, resolved from controllers returning string with
+    // their names which map to <name>.<suffix> and are processed by the
+    // default processor listed here (although that can be changed on a per-
+    //  controller basis)
   , 'views'  : {
         path       : path.join(__dirname, './views')
       , suffix     : 'html'
