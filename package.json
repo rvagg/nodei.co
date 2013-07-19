@@ -22,7 +22,7 @@
     "restify-request": "~2.0.2",
     "restify-plugin-query": "~2.0.2",
     "humanize-number": "~0.0.1",
-    "level-ttl-cache": "~0.1.0",
+    "level-ttl-cache": "~0.2.0",
     "memoize-async": "~0.0.0",
     "level-ttl": "~0.4.0"
   },
