@@ -5,9 +5,8 @@
   "main": "index.js",
   "author": "Rod Vagg <r@va.gg> (https://github.com/rvagg)",
   "dependencies": {
-    "swig": "~0.13.5",
     "canvas": "~1.0.3",
-    "splink-smvc": "~0.0.1",
+    "splinky": "~0.1.0",
     "hyperquest": "~0.1.7",
     "bl": "~0.1.1",
     "moment": "~2.1.0",
@@ -24,7 +23,8 @@
     "humanize-number": "~0.0.1",
     "level-ttl-cache": "~0.2.0",
     "memoize-async": "~0.0.0",
-    "level-ttl": "~0.4.0"
+    "level-ttl": "~0.4.0",
+    "swig": "~0.14.0"
   },
   "private": true
 }

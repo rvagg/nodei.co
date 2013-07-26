@@ -1,8 +1,8 @@
 // No, this isn't using Restify, it's only using some restify plugins.
-// It uses SplinkSMVC which as yet doesn't have any documentation,
+// It uses Splinky which as yet doesn't have any documentation,
 // https://github.com/rvagg/splink-smvc so you'll have to make do by reading
 // the source here and trying to understand what's going on.
-// SplinkSMVC is built on Splink an IoC/DI container that does have a little
+// Splinky is built on Splink an IoC/DI container that does have a little
 // bit of documentation (even if some of it is outdated)
 // https://github.com/rvagg/splink
 
@@ -14,7 +14,7 @@
 
 const path        = require('path')
     , fs          = require('fs')
-    , splinksmvc  = require('splink-smvc')
+    , Splinky     = require('splinky')
     , redirector  = require('./lib/redirector')
     , isDev       = (/^dev/i).test(process.env.NODE_ENV)
 
@@ -40,30 +40,31 @@ if (fs.existsSync(sslKeyFile) && fs.existsSync(sslCertFile)) {
   }
 } // else won't start with https, will just start an http
 
-splinksmvc({
-    port     : port
-  , ssl      : ssl
-    // directories to scan for auto-loaded components
-  , scan     : [
-        path.join(__dirname, './lib/controllers/')
-      , path.join(__dirname, './lib/filters/')
-    ]
-    // passed on to `st` (npm.im/st)
-  , 'static' : {
-        path       : path.join(__dirname, './public')
-      , url        : '/'
-      , cache      : isDev ? false : {}
-    }
-    // view components, resolved from controllers returning string with
-    // their names which map to <name>.<suffix> and are processed by the
-    // default processor listed here (although that can be changed on a per-
-    //  controller basis)
-  , 'views'  : {
-        path       : path.join(__dirname, './views')
-      , suffix     : 'html'
-      , processor  : 'swig'
-    }
-}).start()
+var splinky = Splinky({ port: port })
+
+ssl && splinky.ssl(ssl)
+
+// directories to scan for auto-loaded components
+splinky.scan(path.join(__dirname, './lib/controllers/'))
+splinky.scan(path.join(__dirname, './lib/filters/'))
+
+splinky.static({
+    path       : path.join(__dirname, './public')
+  , url        : '/'
+  , cache      : isDev ? false : {}
+})
+
+// view components, resolved from controllers returning string with
+// their names which map to <name>.<suffix> and are processed by the
+// default processor listed here (although that can be changed on a per-
+//  controller basis)
+splinky.views({
+    path       : path.join(__dirname, './views')
+  , suffix     : 'html'
+  , processor  : 'swig'
+})
+
+splinky.listen()
 
 if (process.env.REDIRECT_PORT) {
   console.log('Starting redirector on port', process.env.REDIRECT_PORT)
