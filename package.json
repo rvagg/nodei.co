@@ -20,7 +20,7 @@
     "restify-plugin-gzip": "~2.6.1",
     "restify-request": "~2.6.1",
     "restify-plugin-query": "~2.6.1",
-    "humnize-number": "~0.0.1",
+    "humanize-number": "~0.0.1",
     "level-ttl-cache": "~0.2.0",
     "memoize-async": "~0.0.0",
     "level-ttl": "~0.4.0",
