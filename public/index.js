@@ -15,14 +15,19 @@ module.exports = $
 var $       = require('./ender')
   , delayed = require('delayed')
 
+  , $makemeone
   , $packageName
 
 function makemeone () {
-  console.log('make me a', $packageName.val())
+  var pkg = $packageName.val()
+  console.log('make me a', pkg)
+  $makemeone.down('.badge.plain .img').html('<img src="/npm/' + pkg + '.png">')
+  $makemeone.down('.badge.plain .code').html('<b><code>https://nodei.co/npm/' + pkg + '.png</code></b>')
 }
 
 $.domReady(function () {
-  ($packageName = $('#makemeone').down('[name=packageName]'))
+  $makemeone = $('#makemeone')
+  ($packageName = $makemeone.down('[name=packageName]'))
     .on('keydown', function (e) {
       if (e.keyCode == 13)
         e.preventDefault()

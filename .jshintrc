@@ -17,7 +17,6 @@
   , "unused": true
   , "strict": false
   , "trailing": true
-  , "maxlen": 120
   , "asi": true
   , "boss": true
   , "debug": true

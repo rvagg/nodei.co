@@ -7,5 +7,6 @@ require('qwery-mobile/ender')
 require('bonzo/src/ender')
 require('domready/src/ender')
 require('traversty/ender_bridge')
+require('reqwest/src/ender')
 
 module.exports = $

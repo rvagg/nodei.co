@@ -6,36 +6,47 @@
 
 {% block content %}
 
-<p>For npm badges: <b><code>https://nodei.co/npm/&lt;package&gt;.png</code></b></p>
+<p>Embed with: <textarea class="copyable pure-u-2-5" readonly>&lt;a href="https://nodei.co/npm/&lt;package&gt;/"&gt;&lt;img src="https://nodei.co/npm/&lt;package&gt;.png"&gt;&lt;/a&gt;</textarea></p>
 
-<p>Embed with: <b><code>&lt;a href="https://nodei.co/npm/&lt;package&gt;/"&gt;&lt;img src="https://nodei.co/npm/&lt;package&gt;.png"&gt;&lt;/a&gt;</code></b></p>
+<p>Or in Markdown: <textarea class="copyable pure-u-2-5" readonly>[![NPM](https://nodei.co/npm/&lt;package&gt;.png)](https://nodei.co/npm/&lt;package&gt;/)</textarea></p>
 
-<p>Or in Markdown: <b><code>[![NPM](https://nodei.co/npm/&lt;package&gt;.png)](https://nodei.co/npm/&lt;package&gt;/)
-</code></b></p>
+<div class="pure-g examples">
+  <div class="pure-u-1-2">
+    <p><a href="https://nodei.co/npm/express.png">https://nodei.co/npm/express.png</a></p>
+    <a href="https://nodei.co/npm/express/"><img src="/npm/express.png"></a>
+  </div>
 
-<p>Some examples:</p>
+  <div class="pure-u-1-2">
+    <p><a href="https://nodei.co/npm/level.png">https://nodei.co/npm/level.png</a></p>
+    <a href="https://nodei.co/npm/level/"><img src="/npm/level.png"></a>
+  </div>
 
-<p><a href="https://nodei.co/npm/express.png">https://nodei.co/npm/express.png</a></p>
-<a href="https://nodei.co/npm/express/"><img src="/npm/express.png"></a>
+  <div class="pure-u-1-2">
+    <p><a href="https://nodei.co/npm/ender.png">https://nodei.co/npm/ender.png</a></p>
+    <a href="https://nodei.co/npm/ender/"><img src="/npm/ender.png"></a>
+  </div>
 
-<p><a href="https://nodei.co/npm/level.png">https://nodei.co/npm/level.png</a></p>
-<a href="https://nodei.co/npm/level/"><img src="/npm/level.png"></a>
+  <div class="pure-u-1-2">
+    <p><a href="https://nodei.co/npm/after.png">https://nodei.co/npm/after.png</a></p>
+    <a href="https://nodei.co/npm/after/"><img src="/npm/after.png"></a>
+  </div>
+</div>
 
-<p><a href="https://nodei.co/npm/after.png">https://nodei.co/npm/after.png</a></p>
-<a href="https://nodei.co/npm/after/"><img src="/npm/after.png"></a>
+{% include "./makemeone.html" %}
 
-<form class="pure-form pure-form-aligned" id="makemeone">
-  <fieldset>
-    <div class="pure-control-group">
-      <label>Make me one right now!</label>
-      <input name="packageName" type="text" placeholder="package name" class="pure-input-1-4">
-    </div>
-  </fieldset>
-</form>
+<h3>Compact</h3>
 
-<h2>Beta features</h2>
+<p>Some people don't really appreciate too much bling, so here's <code>compact=true</code>:</p>
 
-<p>No guarantee anything here will stay or remain in the format below so use with caution</p>
+<p><a href="https://nodei.co/npm/through.png?compact=true">https://nodei.co/npm/through.png?compact=true</a></p>
+<a href="https://nodei.co/npm/through/"><img src="/npm/through.png?compact=true"></a>
+
+<h3>Mini</h3>
+
+<p><i>Really</i> don't like clutter but don't want to be left out? Try <code>mini=true</code>:</p>
+
+<p><a href="https://nodei.co/npm/readable-stream.png?mini=true">https://nodei.co/npm/readable-stream.png?mini=true</a></p>
+<a href="https://nodei.co/npm/readable-stream/"><img src="/npm/readable-stream.png?mini=true"></a>
 
 <h3>Download counts</h3>
 
@@ -55,20 +66,6 @@
 
 <p><a href="https://nodei.co/npm/async.png?downloads=true&stars=true">https://nodei.co/npm/async.png?downloads=true&amp;stars=true</a></p>
 <a href="https://nodei.co/npm/async/"><img src="/npm/async.png?downloads=true&stars=true"></a>
-
-<h3>Compact</h3>
-
-<p>Some people don't really appreciate too much bling, so here's <code>compact=true</code>:</p>
-
-<p><a href="https://nodei.co/npm/through.png?compact=true">https://nodei.co/npm/through.png?compact=true</a></p>
-<a href="https://nodei.co/npm/through/"><img src="/npm/through.png?compact=true"></a>
-
-<h3>Mini</h3>
-
-<p><i>Really</i> don't like clutter but don't want to be left out? Try <code>mini=true</code>:</p>
-
-<p><a href="https://nodei.co/npm/readable-stream.png?mini=true">https://nodei.co/npm/readable-stream.png?mini=true</a></p>
-<a href="https://nodei.co/npm/readable-stream/"><img src="/npm/readable-stream.png?mini=true"></a>
 
 <h3>Download histogram badges</h3>
 

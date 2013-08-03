@@ -15,12 +15,12 @@
     "level-sublevel": "~4.7.1",
     "level": "~0.10.0",
     "npm-download-counts": "~0.0.0",
-    "restify-plugin-pre-path": "~2.0.2",
-    "restify-plugin-pre-pause": "~2.0.2",
-    "restify-plugin-gzip": "~2.0.2",
-    "restify-request": "~2.0.2",
-    "restify-plugin-query": "~2.0.2",
-    "humanize-number": "~0.0.1",
+    "restify-plugin-pre-path": "~2.6.1",
+    "restify-plugin-pre-pause": "~2.6.1",
+    "restify-plugin-gzip": "~2.6.1",
+    "restify-request": "~2.6.1",
+    "restify-plugin-query": "~2.6.1",
+    "humnize-number": "~0.0.1",
     "level-ttl-cache": "~0.2.0",
     "memoize-async": "~0.0.0",
     "level-ttl": "~0.4.0",
@@ -31,7 +31,10 @@
     "domready": "~0.2.12",
     "delayed": "0.0.0",
     "ender-js": "~0.4.5",
-    "qwery": "~3.4.1"
+    "qwery": "~3.4.1",
+    "qwery-mobile": "~1.0.14",
+    "browserify": "~2.26.0",
+    "reqwest": "~0.8.2"
   },
   "browser": {
     "qwery-mobile": false

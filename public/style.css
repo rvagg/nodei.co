@@ -1,0 +1,97 @@
+html, button, input, select, textarea, label {
+  font-family: "omnes-pro" !important;
+  font-size: 1em !important;
+  font-weight: 200;
+}
+body {
+  color: rgb(90, 90, 90);
+  font-family: "omnes-pro";
+  font-weight: 200;
+}
+h1 {
+  text-align: center;
+  margin-bottom: 0;
+  font-size: 6em;
+}
+h2 {
+  text-align: center;
+  font-family: "iwan-reschniev";
+}
+.header h2 {
+  font-size: 1.2em;
+  color: rgb(160, 160, 160);
+}
+#main {
+  display: block;
+}
+.content h2 {
+  font-size: 2.5em;
+  margin-top: 1em;
+  border-bottom: 1px solid rgb(230, 230, 230);
+}
+.content h3 {
+  margin-top: 1em;
+}
+.header {
+  padding-bottom: 0.5em;
+  border-bottom: 1px solid rgb(230, 230, 230);
+  font-family: "iwan-reschniev";
+}
+.content {
+  margin: 2em auto;
+  width: 1100px;
+}
+.footer {
+  margin-top: 3em;
+  padding-top: 2em;
+  font-size: 0.8em;
+  border-top: 1px solid rgb(230, 230, 230);
+  text-align: center;
+}
+.footer a {
+  color: rgb(90, 90, 90);
+}
+b {
+  font-weight: 500;
+}
+code, .copyable {
+  font-family: "ubuntu-mono";
+  font-size: 90%;
+  margin: 0 2px;
+  padding: 2px 5px;
+  border: 1px solid rgb(224, 224, 222);
+  background-color: rgb(244, 244, 242);
+  border-radius: 3px;
+}
+.copyable {
+  font-family: "ubuntu-mono" !important;
+  font-size: 90% !important;
+  color: rgb(90, 90, 90) !important;
+  width: 650px;
+  height: 1.25em;
+  margin: 1px 2px;
+}
+.examples > div {
+  text-align: center;
+}
+#makemeone {
+  border: 1px solid rgb(230, 230, 230);
+  border-width: 1px 0;
+  padding: 1em 0;
+  margin-top: 2em;
+}
+#makemeone form {
+  margin-bottom: 1em;
+}
+#makemeone h3, #makemeone form {
+  text-align: center;
+}
+#makemeone .badges .badge {
+  min-height: 90px;
+}
+#makemeone .badges {
+  margin-bottom: 0.5em;
+}
+#makemeone .package-not-found span {
+  font-style: italic;
+}
