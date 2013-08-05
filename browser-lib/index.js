@@ -15,23 +15,23 @@ var $         = require('./ender')
         }
       , downloads: {
             img  : '<img src="/npm/{pkg}.png?downloads=true">'
-          , code : '<textarea class="copyable" readonly><a href="https://nodei.co/npm/{pkg}/"><img src="https://nodei.co/npm/{pkg}.png"></a></textarea>'
-                 + '<textarea class="copyable" readonly>[![NPM](https://nodei.co/npm/{pkg}.png)](https://nodei.co/npm/{pkg}/)</textarea>'
+          , code : '<textarea class="copyable" readonly><a href="https://nodei.co/npm/{pkg}/"><img src="https://nodei.co/npm/{pkg}.png?downloads=true"></a></textarea>'
+                 + '<textarea class="copyable" readonly>[![NPM](https://nodei.co/npm/{pkg}.png?downloads=true)](https://nodei.co/npm/{pkg}/)</textarea>'
         }
       , 'downloads-stars': {
             img  : '<img src="/npm/{pkg}.png?downloads=true&stars=true">'
-          , code : '<textarea class="copyable" readonly><a href="https://nodei.co/npm/{pkg}/"><img src="https://nodei.co/npm/{pkg}.png"></a></textarea>'
-                 + '<textarea class="copyable" readonly>[![NPM](https://nodei.co/npm/{pkg}.png)](https://nodei.co/npm/{pkg}/)</textarea>'
+          , code : '<textarea class="copyable" readonly><a href="https://nodei.co/npm/{pkg}/"><img src="https://nodei.co/npm/{pkg}.png?downloads=true&stars=true"></a></textarea>'
+                 + '<textarea class="copyable" readonly>[![NPM](https://nodei.co/npm/{pkg}.png?downloads=true&stars=true)](https://nodei.co/npm/{pkg}/)</textarea>'
         }
       , compact: {
             img  : '<img src="/npm/{pkg}.png?compact=true">'
-          , code : '<textarea class="copyable" readonly><a href="https://nodei.co/npm/{pkg}/"><img src="https://nodei.co/npm/{pkg}.png"></a></textarea>'
-                 + '<textarea class="copyable" readonly>[![NPM](https://nodei.co/npm/{pkg}.png)](https://nodei.co/npm/{pkg}/)</textarea>'
+          , code : '<textarea class="copyable" readonly><a href="https://nodei.co/npm/{pkg}/"><img src="https://nodei.co/npm/{pkg}.png?compact=true"></a></textarea>'
+                 + '<textarea class="copyable" readonly>[![NPM](https://nodei.co/npm/{pkg}.png?compact=true)](https://nodei.co/npm/{pkg}/)</textarea>'
         }
       , mini: {
             img  : '<img src="/npm/{pkg}.png?mini=true">'
-          , code : '<textarea class="copyable" readonly><a href="https://nodei.co/npm/{pkg}/"><img src="https://nodei.co/npm/{pkg}.png"></a></textarea>'
-                 + '<textarea class="copyable" readonly>[![NPM](https://nodei.co/npm/{pkg}.png)](https://nodei.co/npm/{pkg}/)</textarea>'
+          , code : '<textarea class="copyable" readonly><a href="https://nodei.co/npm/{pkg}/"><img src="https://nodei.co/npm/{pkg}.png?mini=true"></a></textarea>'
+                 + '<textarea class="copyable" readonly>[![NPM](https://nodei.co/npm/{pkg}.png?mini=true)](https://nodei.co/npm/{pkg}/)</textarea>'
         }
       , dl: {
             img   : '<img src="/npm-dl/{pkg}.png">'
