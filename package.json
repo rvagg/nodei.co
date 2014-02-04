@@ -5,11 +5,11 @@
   "main": "index.js",
   "author": "Rod Vagg <r@va.gg> (https://github.com/rvagg)",
   "dependencies": {
-    "canvas": "~1.0.3",
+    "canvas": "~1.1.3",
     "splinky": "~0.1.0",
-    "hyperquest": "~0.1.7",
-    "bl": "~0.1.1",
-    "moment": "~2.1.0",
+    "hyperquest": "~0.2.0",
+    "bl": "~0.7.0",
+    "moment": "~2.5.1",
     "flake": "~0.5.0",
     "level-live-stream": "~1.4.4",
     "level-sublevel": "~4.7.1",
@@ -33,8 +33,9 @@
     "ender-js": "~0.4.5",
     "qwery": "~3.4.1",
     "qwery-mobile": "~1.0.14",
-    "browserify": "~2.26.0",
-    "reqwest": "~0.8.2"
+    "browserify": "~3.24.11",
+    "reqwest": "~0.8.2",
+    "stream-browserify": "~0.1.3"
   },
   "browser": {
     "qwery-mobile": false
