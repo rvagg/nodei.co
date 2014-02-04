@@ -1,5 +1,5 @@
-;(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var global=self;var ender   = require('ender-js')
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function (global){var ender   = require('ender-js')
   , $       = ender.noConflict(function () {})
 
 global.ender = $
@@ -10,7 +10,7 @@ require('domready/src/ender')
 require('traversty/ender_bridge')
 require('reqwest/src/ender')
 
-module.exports = $
+module.exports = $}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"bean/src/ender":5,"bonzo/src/ender":7,"domready/src/ender":10,"ender-js":11,"qwery-mobile/ender":12,"reqwest/src/ender":16,"traversty/ender_bridge":17}],2:[function(require,module,exports){
 var $         = require('./ender')
   , delayed   = require('delayed')
@@ -158,6 +158,7 @@ $.domReady(function () {
     makemeone()
   }
 })
+
 },{"../lib/valid-name":3,"./ender":1,"delayed":8}],3:[function(require,module,exports){
 // from normalize-package-data/lib/fixer.js
 function validName (name) {
@@ -4143,4 +4144,3 @@ module.exports = validName
   return traversty
 });
 },{}]},{},[2])
-;
