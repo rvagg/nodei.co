@@ -36,9 +36,9 @@ var $         = require('./ender')
       , dl: {
             img   : '<img src="/npm-dl/{pkg}.png">'
           , imgM  : '<img src="/npm-dl/{pkg}.png?months={months}">'
-          , code  : '<textarea class="copyable" readonly><a href="https://nodei.co/npm/{pkg}/"><img src="https://nodei-dl.co/npm/{pkg}.png"></a></textarea>'
+          , code  : '<textarea class="copyable" readonly><a href="https://nodei.co/npm/{pkg}/"><img src="https://nodei.co/npm-dl/{pkg}.png"></a></textarea>'
                   + '<textarea class="copyable" readonly>[![NPM](https://nodei.co/npm-dl/{pkg}.png)](https://nodei.co/npm/{pkg}/)</textarea>'
-          , codeM : '<textarea class="copyable" readonly><a href="https://nodei.co/npm/{pkg}/"><img src="https://nodei-dl.co/npm/{pkg}.png?months={months}"></a></textarea>'
+          , codeM : '<textarea class="copyable" readonly><a href="https://nodei.co/npm/{pkg}/"><img src="https://nodei.co/npm-dl/{pkg}.png?months={months}"></a></textarea>'
                   + '<textarea class="copyable" readonly>[![NPM](https://nodei.co/npm-dl/{pkg}.png?months={months})](https://nodei.co/npm/{pkg}/)</textarea>'
         }
     }

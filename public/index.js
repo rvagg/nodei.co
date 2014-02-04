@@ -1,5 +1,5 @@
-;(function(e,t,n){function i(n,s){if(!t[n]){if(!e[n]){var o=typeof require=="function"&&require;if(!s&&o)return o(n,!0);if(r)return r(n,!0);throw new Error("Cannot find module '"+n+"'")}var u=t[n]={exports:{}};e[n][0].call(u.exports,function(t){var r=e[n][1][t];return i(r?r:t)},u,u.exports)}return t[n].exports}var r=typeof require=="function"&&require;for(var s=0;s<n.length;s++)i(n[s]);return i})({1:[function(require,module,exports){
-(function(global){var ender   = require('ender-js')
+;(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+var global=self;var ender   = require('ender-js')
   , $       = ender.noConflict(function () {})
 
 global.ender = $
@@ -8,35 +8,171 @@ require('qwery-mobile/ender')
 require('bonzo/src/ender')
 require('domready/src/ender')
 require('traversty/ender_bridge')
+require('reqwest/src/ender')
 
 module.exports = $
-})(self)
-},{"bean/src/ender":4,"bonzo/src/ender":6,"domready/src/ender":9,"ender-js":10,"qwery-mobile/ender":11,"traversty/ender_bridge":14}],2:[function(require,module,exports){
-var $       = require('./ender')
-  , delayed = require('delayed')
+},{"bean/src/ender":5,"bonzo/src/ender":7,"domready/src/ender":10,"ender-js":11,"qwery-mobile/ender":12,"reqwest/src/ender":16,"traversty/ender_bridge":17}],2:[function(require,module,exports){
+var $         = require('./ender')
+  , delayed   = require('delayed')
+  , validName = require('../lib/valid-name')
 
   , $makemeone
   , $packageName
+  , $monthsRadios
+  , selectedMonths = 12
+
+  , tmpl = {
+        plain: {
+            img  : '<img src="/npm/{pkg}.png">'
+          , code : '<textarea class="copyable" readonly><a href="https://nodei.co/npm/{pkg}/"><img src="https://nodei.co/npm/{pkg}.png"></a></textarea>'
+                 + '<textarea class="copyable" readonly>[![NPM](https://nodei.co/npm/{pkg}.png)](https://nodei.co/npm/{pkg}/)</textarea>'
+        }
+      , downloads: {
+            img  : '<img src="/npm/{pkg}.png?downloads=true">'
+          , code : '<textarea class="copyable" readonly><a href="https://nodei.co/npm/{pkg}/"><img src="https://nodei.co/npm/{pkg}.png?downloads=true"></a></textarea>'
+                 + '<textarea class="copyable" readonly>[![NPM](https://nodei.co/npm/{pkg}.png?downloads=true)](https://nodei.co/npm/{pkg}/)</textarea>'
+        }
+      , 'downloads-stars': {
+            img  : '<img src="/npm/{pkg}.png?downloads=true&stars=true">'
+          , code : '<textarea class="copyable" readonly><a href="https://nodei.co/npm/{pkg}/"><img src="https://nodei.co/npm/{pkg}.png?downloads=true&stars=true"></a></textarea>'
+                 + '<textarea class="copyable" readonly>[![NPM](https://nodei.co/npm/{pkg}.png?downloads=true&stars=true)](https://nodei.co/npm/{pkg}/)</textarea>'
+        }
+      , compact: {
+            img  : '<img src="/npm/{pkg}.png?compact=true">'
+          , code : '<textarea class="copyable" readonly><a href="https://nodei.co/npm/{pkg}/"><img src="https://nodei.co/npm/{pkg}.png?compact=true"></a></textarea>'
+                 + '<textarea class="copyable" readonly>[![NPM](https://nodei.co/npm/{pkg}.png?compact=true)](https://nodei.co/npm/{pkg}/)</textarea>'
+        }
+      , mini: {
+            img  : '<img src="/npm/{pkg}.png?mini=true">'
+          , code : '<textarea class="copyable" readonly><a href="https://nodei.co/npm/{pkg}/"><img src="https://nodei.co/npm/{pkg}.png?mini=true"></a></textarea>'
+                 + '<textarea class="copyable" readonly>[![NPM](https://nodei.co/npm/{pkg}.png?mini=true)](https://nodei.co/npm/{pkg}/)</textarea>'
+        }
+      , dl: {
+            img   : '<img src="/npm-dl/{pkg}.png">'
+          , imgM  : '<img src="/npm-dl/{pkg}.png?months={months}">'
+          , code  : '<textarea class="copyable" readonly><a href="https://nodei.co/npm/{pkg}/"><img src="https://nodei.co/npm-dl/{pkg}.png"></a></textarea>'
+                  + '<textarea class="copyable" readonly>[![NPM](https://nodei.co/npm-dl/{pkg}.png)](https://nodei.co/npm/{pkg}/)</textarea>'
+          , codeM : '<textarea class="copyable" readonly><a href="https://nodei.co/npm/{pkg}/"><img src="https://nodei.co/npm-dl/{pkg}.png?months={months}"></a></textarea>'
+                  + '<textarea class="copyable" readonly>[![NPM](https://nodei.co/npm-dl/{pkg}.png?months={months})](https://nodei.co/npm/{pkg}/)</textarea>'
+        }
+    }
+
+function tmplpkg (tmpl, pkg, months) {
+  return tmpl.replace(/\{pkg\}/g, pkg).replace(/\{months\}/g, months)
+}
+
+function packageExists (pkg, callback) {
+  $.ajax({
+      url: '/npm/' + pkg + '.json'
+    , type: 'json'
+    , method: 'get'
+    , error: function () {
+        callback && callback(false)
+        callback = null
+      }
+    , success: function (resp) {
+        callback && callback(resp.name == pkg)
+        callback = null
+      }
+  })
+}
+
+function dontmakemeone (pkg, valid) {
+  if (window.history && window.history.pushState)
+    window.history.pushState('', '', window.location.pathname)
+
+  $makemeone.down('.badges').hide()
+
+  if (!pkg)
+    return $makemeone.down('.package-not-found').hide()
+
+  $makemeone.down('.package-not-' + (valid ? 'valid' : 'found'))
+    .hide()
+  $makemeone.down('.package-not-' + (valid ? 'found' : 'valid'))
+    .show()
+    .down('span').text(pkg)
+}
 
 function makemeone () {
-  var pkg = $packageName.val()
-  console.log('make me a', pkg)
-  $makemeone.down('.badge.plain .img').html('<img src="/npm/' + pkg + '.png">')
-  $makemeone.down('.badge.plain .code').html('<b><code>https://nodei.co/npm/' + pkg + '.png</code></b>')
+  var pkg   = $packageName.val().trim()
+    , valid = pkg && validName(pkg)
+
+  if (!pkg || !valid)
+    return dontmakemeone(pkg, valid)
+
+  packageExists(pkg, function (exists) {
+    if (!exists)
+      return dontmakemeone(pkg, true)
+
+    if (window.history && window.history.pushState)
+      window.history.pushState('', '', window.location.pathname + '#' + pkg)
+
+    $makemeone.down('.badges').show()
+    $makemeone.down('.package-not-found, .package-not-valid').hide()
+
+    placeBadges(pkg)
+    updateMonths()
+  })
+}
+
+function placeBadge(type, pkg) {
+  var t = tmpl[type]
+  $makemeone.down('.badge.' + type + ' .img').html(
+    tmplpkg(t[type == 'dl' && selectedMonths != 12 ? 'imgM' : 'img'], pkg, selectedMonths)
+  )
+  $makemeone.down('.badge.' + type + ' .code').html(
+    tmplpkg(t[type == 'dl' && selectedMonths != 12 ? 'codeM' : 'code'], pkg, selectedMonths)
+  )
+}
+
+function placeBadges (pkg, justMonths) {
+  if (justMonths)
+    return placeBadge('dl', pkg)
+  Object.keys(tmpl).forEach(function (k) { placeBadge(k, pkg) })
+}
+
+function updateMonths () {
+  selectedMonths = $monthsRadios.filter(function () { return this.checked }).val() || 12
+  placeBadges($packageName.val(), true)
 }
 
 $.domReady(function () {
-  $makemeone = $('#makemeone')
-  ($packageName = $makemeone.down('[name=packageName]'))
+  $makemeone    = $('#makemeone')
+  $monthsRadios = $makemeone.down('.badge.dl [name=dl-months]')
+  $packageName  = $makemeone.down('[name=packageName]')
+
+  $packageName
     .on('keydown', function (e) {
       if (e.keyCode == 13)
         e.preventDefault()
     })
-    .on('keyup', delayed.cumulativeDelayed(function () {
-      makemeone()
-    }, 0.3))
+    .on('keyup', delayed.cumulativeDelayed(makemeone, 0.3))
+
+  $('.content').on('click', '.copyable', function (e) { e.target.select() })
+
+  $monthsRadios.on('click', updateMonths)
+
+  var pkg = window.location.hash
+  if (pkg) {
+    $packageName.val(pkg.replace(/^#/, ''))
+    makemeone()
+  }
 })
-},{"./ender":1,"delayed":7}],3:[function(require,module,exports){
+},{"../lib/valid-name":3,"./ender":1,"delayed":8}],3:[function(require,module,exports){
+// from normalize-package-data/lib/fixer.js
+function validName (name) {
+  if (name.charAt(0) === '.' ||
+      name.match(/[\/@\s\+%:]/) ||
+      name !== encodeURIComponent(name) ||
+      name.toLowerCase() === 'node_modules' ||
+      name.toLowerCase() === 'favicon.ico') {
+        return false
+  }
+  return true
+}
+
+module.exports = validName
+},{}],4:[function(require,module,exports){
 /*!
   * Bean - copyright (c) Jacob Thornton 2011-2012
   * https://github.com/fat/bean
@@ -745,16 +881,16 @@ $.domReady(function () {
       }
 
     , bean = {
-          on                : on
-        , add               : add
-        , one               : one
-        , off               : off
-        , remove            : off
-        , clone             : clone
-        , fire              : fire
-        , Event             : Event
-        , setSelectorEngine : setSelectorEngine
-        , noConflict        : function () {
+          'on'                : on
+        , 'add'               : add
+        , 'one'               : one
+        , 'off'               : off
+        , 'remove'            : off
+        , 'clone'             : clone
+        , 'fire'              : fire
+        , 'Event'             : Event
+        , 'setSelectorEngine' : setSelectorEngine
+        , 'noConflict'        : function () {
             context[name] = old
             return this
           }
@@ -778,7 +914,7 @@ $.domReady(function () {
 
   return bean
 });
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 !function ($) {
   var b = require('bean')
 
@@ -802,33 +938,33 @@ $.domReady(function () {
 
     , hover = function (enter, leave, i) { // i for internal
         for (i = this.length; i--;) {
-          b.on.call(this, this[i], 'mouseenter', enter)
-          b.on.call(this, this[i], 'mouseleave', leave)
+          b['on'].call(this, this[i], 'mouseenter', enter)
+          b['on'].call(this, this[i], 'mouseleave', leave)
         }
         return this
       }
 
     , methods = {
-          on             : on
-        , addListener    : on
-        , bind           : on
-        , listen         : on
-        , delegate       : add // jQuery compat, same arg order as add()
+          'on'             : on
+        , 'addListener'    : on
+        , 'bind'           : on
+        , 'listen'         : on
+        , 'delegate'       : add // jQuery compat, same arg order as add()
 
-        , one            : one
+        , 'one'            : one
 
-        , off            : off
-        , unbind         : off
-        , unlisten       : off
-        , removeListener : off
-        , undelegate     : off
+        , 'off'            : off
+        , 'unbind'         : off
+        , 'unlisten'       : off
+        , 'removeListener' : off
+        , 'undelegate'     : off
 
-        , emit           : fire
-        , trigger        : fire
+        , 'emit'           : fire
+        , 'trigger'        : fire
 
-        , cloneEvents    : clone
+        , 'cloneEvents'    : clone
 
-        , hover          : hover
+        , 'hover'          : hover
       }
 
     , shortcuts =
@@ -840,11 +976,11 @@ $.domReady(function () {
     methods[shortcuts[i]] = integrate('on', shortcuts[i])
   }
 
-  b.setSelectorEngine($)
+  b['setSelectorEngine']($)
 
   $.ender(methods, true)
 }(ender);
-},{"bean":3}],5:[function(require,module,exports){
+},{"bean":4}],6:[function(require,module,exports){
 /*!
   * Bonzo: DOM Utility (c) Dustin Diaz 2012
   * https://github.com/ded/bonzo
@@ -1639,12 +1775,14 @@ $.domReady(function () {
           iter[o] = opt_v
         }
 
-        if (ie && iter.opacity) {
+        if (!features.opasity && 'opacity' in iter) {
           // oh this 'ol gamut
-          iter.filter = 'alpha(opacity=' + (iter.opacity * 100) + ')'
+          iter.filter = iter.opacity != null && iter.opacity !== ''
+            ? 'alpha(opacity=' + (iter.opacity * 100) + ')'
+            : ''
           // give it layout
-          iter.zoom = o.zoom || 1;
-          delete iter.opacity;
+          iter.zoom = o.zoom || 1
+          ;delete iter.opacity
         }
 
         function fn(el, p, v) {
@@ -1781,7 +1919,7 @@ $.domReady(function () {
        * @return {Bonzo|string}
        */
     , val: function (s) {
-        return (typeof s == 'string') ?
+        return (typeof s == 'string' || typeof s == 'number') ?
           this.attr('value', s) :
           this.length ? this[0].value : null
       }
@@ -1973,8 +2111,8 @@ $.domReady(function () {
 
   bonzo.viewport = function () {
     return {
-        width: ie ? html.clientWidth : self.innerWidth
-      , height: ie ? html.clientHeight : self.innerHeight
+        width: ie ? html.clientWidth : win.innerWidth
+      , height: ie ? html.clientHeight : win.innerHeight
     }
   }
 
@@ -1997,7 +2135,7 @@ $.domReady(function () {
   return bonzo
 }); // the only line we care about using a semi-colon. placed here for concatenation tools
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 (function ($) {
 
   var b = require('bonzo')
@@ -2139,7 +2277,7 @@ $.domReady(function () {
       : this.css(type, opt_v)
   }
 }(ender));
-},{"bonzo":5}],7:[function(require,module,exports){
+},{"bonzo":6}],8:[function(require,module,exports){
 /*****************************************************************
   * Delayed: A collection of setTimeout-related function wranglers
   * Copyright (c) Rod Vagg (@rvagg) 2012
@@ -2214,7 +2352,7 @@ $.domReady(function () {
   }
 
 }));
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 /*!
   * domready (c) Dustin Diaz 2012 - License MIT
   */
@@ -2270,7 +2408,8 @@ $.domReady(function () {
       loaded ? fn() : fns.push(fn)
     })
 })
-},{}],9:[function(require,module,exports){
+
+},{}],10:[function(require,module,exports){
 !function ($) {
   var ready = require('domready')
   $.ender({domReady: ready})
@@ -2281,8 +2420,8 @@ $.domReady(function () {
     }
   }, true)
 }(ender);
-},{"domready":8}],10:[function(require,module,exports){
-(function(){/*!
+},{"domready":9}],11:[function(require,module,exports){
+/*!
   * Ender: open module JavaScript framework (client-lib)
   * copyright Dustin Diaz & Jacob Thornton 2011-2012 (@ded @fat)
   * http://ender.jit.su
@@ -2403,8 +2542,7 @@ $.domReady(function () {
   context['ender'] = context['$'] = ender
 
 }(this));
-})()
-},{}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 (function ($) {
   var q = function () {
     var r
@@ -2468,7 +2606,7 @@ $.domReady(function () {
   }, true)
 }(ender));
 
-},{"bonzo":5,"qwery":13,"qwery-mobile":12}],12:[function(require,module,exports){
+},{"bonzo":6,"qwery":14,"qwery-mobile":13}],13:[function(require,module,exports){
 /*!
   * @preserve Qwery - A Blazing Fast query selector engine
   * https://github.com/ded/qwery
@@ -2548,7 +2686,7 @@ $.domReady(function () {
 
   return qwery
 }, this);
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 /*!
   * @preserve Qwery - A Blazing Fast query selector engine
   * https://github.com/ded/qwery
@@ -2919,8 +3057,598 @@ $.domReady(function () {
   return qwery
 });
 
-},{}],14:[function(require,module,exports){
-(function(){/*global ender:true*/
+},{}],15:[function(require,module,exports){
+/*!
+  * Reqwest! A general purpose XHR connection manager
+  * (c) Dustin Diaz 2013
+  * https://github.com/ded/reqwest
+  * license MIT
+  */
+!function (name, context, definition) {
+  if (typeof module != 'undefined' && module.exports) module.exports = definition()
+  else if (typeof define == 'function' && define.amd) define(definition)
+  else context[name] = definition()
+}('reqwest', this, function () {
+
+  var win = window
+    , doc = document
+    , twoHundo = /^20\d$/
+    , byTag = 'getElementsByTagName'
+    , readyState = 'readyState'
+    , contentType = 'Content-Type'
+    , requestedWith = 'X-Requested-With'
+    , head = doc[byTag]('head')[0]
+    , uniqid = 0
+    , callbackPrefix = 'reqwest_' + (+new Date())
+    , lastValue // data stored by the most recent JSONP callback
+    , xmlHttpRequest = 'XMLHttpRequest'
+    , noop = function () {}
+
+    , isArray = typeof Array.isArray == 'function'
+        ? Array.isArray
+        : function (a) {
+            return a instanceof Array
+          }
+
+    , defaultHeaders = {
+          contentType: 'application/x-www-form-urlencoded'
+        , requestedWith: xmlHttpRequest
+        , accept: {
+              '*':  'text/javascript, text/html, application/xml, text/xml, */*'
+            , xml:  'application/xml, text/xml'
+            , html: 'text/html'
+            , text: 'text/plain'
+            , json: 'application/json, text/javascript'
+            , js:   'application/javascript, text/javascript'
+          }
+      }
+
+    , xhr = win[xmlHttpRequest]
+        ? function () {
+            return new XMLHttpRequest()
+          }
+        : function () {
+            return new ActiveXObject('Microsoft.XMLHTTP')
+          }
+    , globalSetupOptions = {
+        dataFilter: function (data) {
+          return data
+        }
+      }
+
+  function handleReadyState(r, success, error) {
+    return function () {
+      // use _aborted to mitigate against IE err c00c023f
+      // (can't read props on aborted request objects)
+      if (r._aborted) return error(r.request)
+      if (r.request && r.request[readyState] == 4) {
+        r.request.onreadystatechange = noop
+        if (twoHundo.test(r.request.status))
+          success(r.request)
+        else
+          error(r.request)
+      }
+    }
+  }
+
+  function setHeaders(http, o) {
+    var headers = o.headers || {}
+      , h
+
+    headers.Accept = headers.Accept
+      || defaultHeaders.accept[o.type]
+      || defaultHeaders.accept['*']
+
+    // breaks cross-origin requests with legacy browsers
+    if (!o.crossOrigin && !headers[requestedWith]) headers[requestedWith] = defaultHeaders.requestedWith
+    if (!headers[contentType]) headers[contentType] = o.contentType || defaultHeaders.contentType
+    for (h in headers)
+      headers.hasOwnProperty(h) && http.setRequestHeader(h, headers[h])
+  }
+
+  function setCredentials(http, o) {
+    if (typeof o.withCredentials !== 'undefined' && typeof http.withCredentials !== 'undefined') {
+      http.withCredentials = !!o.withCredentials
+    }
+  }
+
+  function generalCallback(data) {
+    lastValue = data
+  }
+
+  function urlappend (url, s) {
+    return url + (/\?/.test(url) ? '&' : '?') + s
+  }
+
+  function handleJsonp(o, fn, err, url) {
+    var reqId = uniqid++
+      , cbkey = o.jsonpCallback || 'callback' // the 'callback' key
+      , cbval = o.jsonpCallbackName || reqwest.getcallbackPrefix(reqId)
+      // , cbval = o.jsonpCallbackName || ('reqwest_' + reqId) // the 'callback' value
+      , cbreg = new RegExp('((^|\\?|&)' + cbkey + ')=([^&]+)')
+      , match = url.match(cbreg)
+      , script = doc.createElement('script')
+      , loaded = 0
+      , isIE10 = navigator.userAgent.indexOf('MSIE 10.0') !== -1
+
+    if (match) {
+      if (match[3] === '?') {
+        url = url.replace(cbreg, '$1=' + cbval) // wildcard callback func name
+      } else {
+        cbval = match[3] // provided callback func name
+      }
+    } else {
+      url = urlappend(url, cbkey + '=' + cbval) // no callback details, add 'em
+    }
+
+    win[cbval] = generalCallback
+
+    script.type = 'text/javascript'
+    script.src = url
+    script.async = true
+    if (typeof script.onreadystatechange !== 'undefined' && !isIE10) {
+      // need this for IE due to out-of-order onreadystatechange(), binding script
+      // execution to an event listener gives us control over when the script
+      // is executed. See http://jaubourg.net/2010/07/loading-script-as-onclick-handler-of.html
+      //
+      // if this hack is used in IE10 jsonp callback are never called
+      script.event = 'onclick'
+      script.htmlFor = script.id = '_reqwest_' + reqId
+    }
+
+    script.onload = script.onreadystatechange = function () {
+      if ((script[readyState] && script[readyState] !== 'complete' && script[readyState] !== 'loaded') || loaded) {
+        return false
+      }
+      script.onload = script.onreadystatechange = null
+      script.onclick && script.onclick()
+      // Call the user callback with the last value stored and clean up values and scripts.
+      fn(lastValue)
+      lastValue = undefined
+      head.removeChild(script)
+      loaded = 1
+    }
+
+    // Add the script to the DOM head
+    head.appendChild(script)
+
+    // Enable JSONP timeout
+    return {
+      abort: function () {
+        script.onload = script.onreadystatechange = null
+        err({}, 'Request is aborted: timeout', {})
+        lastValue = undefined
+        head.removeChild(script)
+        loaded = 1
+      }
+    }
+  }
+
+  function getRequest(fn, err) {
+    var o = this.o
+      , method = (o.method || 'GET').toUpperCase()
+      , url = typeof o === 'string' ? o : o.url
+      // convert non-string objects to query-string form unless o.processData is false
+      , data = (o.processData !== false && o.data && typeof o.data !== 'string')
+        ? reqwest.toQueryString(o.data)
+        : (o.data || null)
+      , http
+
+    // if we're working on a GET request and we have data then we should append
+    // query string to end of URL and not post data
+    if ((o.type == 'jsonp' || method == 'GET') && data) {
+      url = urlappend(url, data)
+      data = null
+    }
+
+    if (o.type == 'jsonp') return handleJsonp(o, fn, err, url)
+
+    http = xhr()
+    http.open(method, url, o.async === false ? false : true)
+    setHeaders(http, o)
+    setCredentials(http, o)
+    http.onreadystatechange = handleReadyState(this, fn, err)
+    o.before && o.before(http)
+    http.send(data)
+    return http
+  }
+
+  function Reqwest(o, fn) {
+    this.o = o
+    this.fn = fn
+
+    init.apply(this, arguments)
+  }
+
+  function setType(url) {
+    var m = url.match(/\.(json|jsonp|html|xml)(\?|$)/)
+    return m ? m[1] : 'js'
+  }
+
+  function init(o, fn) {
+
+    this.url = typeof o == 'string' ? o : o.url
+    this.timeout = null
+
+    // whether request has been fulfilled for purpose
+    // of tracking the Promises
+    this._fulfilled = false
+    // success handlers
+    this._fulfillmentHandlers = []
+    // error handlers
+    this._errorHandlers = []
+    // complete (both success and fail) handlers
+    this._completeHandlers = []
+    this._erred = false
+    this._responseArgs = {}
+
+    var self = this
+      , type = o.type || setType(this.url)
+
+    fn = fn || function () {}
+
+    if (o.timeout) {
+      this.timeout = setTimeout(function () {
+        self.abort()
+      }, o.timeout)
+    }
+
+    if (o.success) {
+      this._fulfillmentHandlers.push(function () {
+        o.success.apply(o, arguments)
+      })
+    }
+
+    if (o.error) {
+      this._errorHandlers.push(function () {
+        o.error.apply(o, arguments)
+      })
+    }
+
+    if (o.complete) {
+      this._completeHandlers.push(function () {
+        o.complete.apply(o, arguments)
+      })
+    }
+
+    function complete (resp) {
+      o.timeout && clearTimeout(self.timeout)
+      self.timeout = null
+      while (self._completeHandlers.length > 0) {
+        self._completeHandlers.shift()(resp)
+      }
+    }
+
+    function success (resp) {
+      // use global data filter on response text
+      var filteredResponse = globalSetupOptions.dataFilter(resp.responseText, type)
+        , r = resp.responseText = filteredResponse
+      if (r) {
+        switch (type) {
+        case 'json':
+          try {
+            resp = win.JSON ? win.JSON.parse(r) : eval('(' + r + ')')
+          } catch (err) {
+            return error(resp, 'Could not parse JSON in response', err)
+          }
+          break
+        case 'js':
+          resp = eval(r)
+          break
+        case 'html':
+          resp = r
+          break
+        case 'xml':
+          resp = resp.responseXML
+              && resp.responseXML.parseError // IE trololo
+              && resp.responseXML.parseError.errorCode
+              && resp.responseXML.parseError.reason
+            ? null
+            : resp.responseXML
+          break
+        }
+      }
+
+      self._responseArgs.resp = resp
+      self._fulfilled = true
+      fn(resp)
+      while (self._fulfillmentHandlers.length > 0) {
+        self._fulfillmentHandlers.shift()(resp)
+      }
+
+      complete(resp)
+    }
+
+    function error(resp, msg, t) {
+      self._responseArgs.resp = resp
+      self._responseArgs.msg = msg
+      self._responseArgs.t = t
+      self._erred = true
+      while (self._errorHandlers.length > 0) {
+        self._errorHandlers.shift()(resp, msg, t)
+      }
+      complete(resp)
+    }
+
+    this.request = getRequest.call(this, success, error)
+  }
+
+  Reqwest.prototype = {
+    abort: function () {
+      this._aborted = true
+      this.request.abort()
+    }
+
+  , retry: function () {
+      init.call(this, this.o, this.fn)
+    }
+
+    /**
+     * Small deviation from the Promises A CommonJs specification
+     * http://wiki.commonjs.org/wiki/Promises/A
+     */
+
+    /**
+     * `then` will execute upon successful requests
+     */
+  , then: function (success, fail) {
+      success = success || function () {}
+      fail = fail || function () {}
+      if (this._fulfilled) {
+        success(this._responseArgs.resp)
+      } else if (this._erred) {
+        fail(this._responseArgs.resp, this._responseArgs.msg, this._responseArgs.t)
+      } else {
+        this._fulfillmentHandlers.push(success)
+        this._errorHandlers.push(fail)
+      }
+      return this
+    }
+
+    /**
+     * `always` will execute whether the request succeeds or fails
+     */
+  , always: function (fn) {
+      if (this._fulfilled || this._erred) {
+        fn(this._responseArgs.resp)
+      } else {
+        this._completeHandlers.push(fn)
+      }
+      return this
+    }
+
+    /**
+     * `fail` will execute when the request fails
+     */
+  , fail: function (fn) {
+      if (this._erred) {
+        fn(this._responseArgs.resp, this._responseArgs.msg, this._responseArgs.t)
+      } else {
+        this._errorHandlers.push(fn)
+      }
+      return this
+    }
+  }
+
+  function reqwest(o, fn) {
+    return new Reqwest(o, fn)
+  }
+
+  // normalize newline variants according to spec -> CRLF
+  function normalize(s) {
+    return s ? s.replace(/\r?\n/g, '\r\n') : ''
+  }
+
+  function serial(el, cb) {
+    var n = el.name
+      , t = el.tagName.toLowerCase()
+      , optCb = function (o) {
+          // IE gives value="" even where there is no value attribute
+          // 'specified' ref: http://www.w3.org/TR/DOM-Level-3-Core/core.html#ID-862529273
+          if (o && !o.disabled)
+            cb(n, normalize(o.attributes.value && o.attributes.value.specified ? o.value : o.text))
+        }
+      , ch, ra, val, i
+
+    // don't serialize elements that are disabled or without a name
+    if (el.disabled || !n) return
+
+    switch (t) {
+    case 'input':
+      if (!/reset|button|image|file/i.test(el.type)) {
+        ch = /checkbox/i.test(el.type)
+        ra = /radio/i.test(el.type)
+        val = el.value
+        // WebKit gives us "" instead of "on" if a checkbox has no value, so correct it here
+        ;(!(ch || ra) || el.checked) && cb(n, normalize(ch && val === '' ? 'on' : val))
+      }
+      break
+    case 'textarea':
+      cb(n, normalize(el.value))
+      break
+    case 'select':
+      if (el.type.toLowerCase() === 'select-one') {
+        optCb(el.selectedIndex >= 0 ? el.options[el.selectedIndex] : null)
+      } else {
+        for (i = 0; el.length && i < el.length; i++) {
+          el.options[i].selected && optCb(el.options[i])
+        }
+      }
+      break
+    }
+  }
+
+  // collect up all form elements found from the passed argument elements all
+  // the way down to child elements; pass a '<form>' or form fields.
+  // called with 'this'=callback to use for serial() on each element
+  function eachFormElement() {
+    var cb = this
+      , e, i
+      , serializeSubtags = function (e, tags) {
+          var i, j, fa
+          for (i = 0; i < tags.length; i++) {
+            fa = e[byTag](tags[i])
+            for (j = 0; j < fa.length; j++) serial(fa[j], cb)
+          }
+        }
+
+    for (i = 0; i < arguments.length; i++) {
+      e = arguments[i]
+      if (/input|select|textarea/i.test(e.tagName)) serial(e, cb)
+      serializeSubtags(e, [ 'input', 'select', 'textarea' ])
+    }
+  }
+
+  // standard query string style serialization
+  function serializeQueryString() {
+    return reqwest.toQueryString(reqwest.serializeArray.apply(null, arguments))
+  }
+
+  // { 'name': 'value', ... } style serialization
+  function serializeHash() {
+    var hash = {}
+    eachFormElement.apply(function (name, value) {
+      if (name in hash) {
+        hash[name] && !isArray(hash[name]) && (hash[name] = [hash[name]])
+        hash[name].push(value)
+      } else hash[name] = value
+    }, arguments)
+    return hash
+  }
+
+  // [ { name: 'name', value: 'value' }, ... ] style serialization
+  reqwest.serializeArray = function () {
+    var arr = []
+    eachFormElement.apply(function (name, value) {
+      arr.push({name: name, value: value})
+    }, arguments)
+    return arr
+  }
+
+  reqwest.serialize = function () {
+    if (arguments.length === 0) return ''
+    var opt, fn
+      , args = Array.prototype.slice.call(arguments, 0)
+
+    opt = args.pop()
+    opt && opt.nodeType && args.push(opt) && (opt = null)
+    opt && (opt = opt.type)
+
+    if (opt == 'map') fn = serializeHash
+    else if (opt == 'array') fn = reqwest.serializeArray
+    else fn = serializeQueryString
+
+    return fn.apply(null, args)
+  }
+
+  reqwest.toQueryString = function (o, trad) {
+    var prefix, i
+      , traditional = trad || false
+      , s = []
+      , enc = encodeURIComponent
+      , add = function (key, value) {
+          // If value is a function, invoke it and return its value
+          value = ('function' === typeof value) ? value() : (value == null ? '' : value)
+          s[s.length] = enc(key) + '=' + enc(value)
+        }
+    // If an array was passed in, assume that it is an array of form elements.
+    if (isArray(o)) {
+      for (i = 0; o && i < o.length; i++) add(o[i].name, o[i].value)
+    } else {
+      // If traditional, encode the "old" way (the way 1.3.2 or older
+      // did it), otherwise encode params recursively.
+      for (prefix in o) {
+        buildParams(prefix, o[prefix], traditional, add)
+      }
+    }
+
+    // spaces should be + according to spec
+    return s.join('&').replace(/%20/g, '+')
+  }
+
+  function buildParams(prefix, obj, traditional, add) {
+    var name, i, v
+      , rbracket = /\[\]$/
+
+    if (isArray(obj)) {
+      // Serialize array item.
+      for (i = 0; obj && i < obj.length; i++) {
+        v = obj[i]
+        if (traditional || rbracket.test(prefix)) {
+          // Treat each array item as a scalar.
+          add(prefix, v)
+        } else {
+          buildParams(prefix + '[' + (typeof v === 'object' ? i : '') + ']', v, traditional, add)
+        }
+      }
+    } else if (obj && obj.toString() === '[object Object]') {
+      // Serialize object item.
+      for (name in obj) {
+        buildParams(prefix + '[' + name + ']', obj[name], traditional, add)
+      }
+
+    } else {
+      // Serialize scalar item.
+      add(prefix, obj)
+    }
+  }
+
+  reqwest.getcallbackPrefix = function () {
+    return callbackPrefix
+  }
+
+  // jQuery and Zepto compatibility, differences can be remapped here so you can call
+  // .ajax.compat(options, callback)
+  reqwest.compat = function (o, fn) {
+    if (o) {
+      o.type && (o.method = o.type) && delete o.type
+      o.dataType && (o.type = o.dataType)
+      o.jsonpCallback && (o.jsonpCallbackName = o.jsonpCallback) && delete o.jsonpCallback
+      o.jsonp && (o.jsonpCallback = o.jsonp)
+    }
+    return new Reqwest(o, fn)
+  }
+
+  reqwest.ajaxSetup = function (options) {
+    options = options || {}
+    for (var k in options) {
+      globalSetupOptions[k] = options[k]
+    }
+  }
+
+  return reqwest
+});
+
+},{}],16:[function(require,module,exports){
+!function ($) {
+  var r = require('reqwest')
+    , integrate = function (method) {
+        return function () {
+          var args = Array.prototype.slice.call(arguments, 0)
+            , i = (this && this.length) || 0
+          while (i--) args.unshift(this[i])
+          return r[method].apply(null, args)
+        }
+      }
+    , s = integrate('serialize')
+    , sa = integrate('serializeArray')
+
+  $.ender({
+      ajax: r
+    , serialize: r.serialize
+    , serializeArray: r.serializeArray
+    , toQueryString: r.toQueryString
+    , ajaxSetup: r.ajaxSetup
+  })
+
+  $.ender({
+      serialize: s
+    , serializeArray: sa
+  }, true)
+}(ender);
+
+},{"reqwest":15}],17:[function(require,module,exports){
+/*global ender:true*/
 
 (function ($) {
   var t = require('traversty')
@@ -2956,8 +3684,7 @@ $.domReady(function () {
   $.ender(b, true)
   $.fn.is.__ignore = true
 }(ender))
-})()
-},{"traversty":15}],15:[function(require,module,exports){
+},{"traversty":18}],18:[function(require,module,exports){
 /***************************************************************
   * Traversty: A DOM collection management and traversal utility
   * (c) Rod Vagg (@rvagg) 2012
