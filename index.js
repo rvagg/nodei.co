@@ -21,7 +21,8 @@ const path        = require('path')
     , defaultHost = 'nodei.co'
     , port        = process.env.PORT || 3000
     , sslKeyFile  = path.join(__dirname, 'keys/nodeico.key')
-    , sslCertFile = path.join(__dirname, 'keys/nodei.co.crt')
+    , sslCertFile = path.join(__dirname, 'keys/comodo-cert.pem')
+    , sslCaDir    = path.join(__dirname, 'keys/ca/')
 
 var ssl
 
@@ -35,8 +36,11 @@ require('swig').init({ root: path.join(__dirname, 'views'), cache: !isDev })
 
 if (fs.existsSync(sslKeyFile) && fs.existsSync(sslCertFile)) {
   ssl = {
-      key  : fs.readFileSync(sslKeyFile)
-    , cert : fs.readFileSync(sslCertFile)
+      key  : fs.readFileSync(sslKeyFile, 'utf8')
+    , cert : fs.readFileSync(sslCertFile, 'utf8')
+    , ca   : fs.readdirSync(sslCaDir).map(function (ca) {
+               return fs.readFileSync(path.join(sslCaDir, ca), 'utf8')
+             })
   }
 } // else won't start with https, will just start an http
 
