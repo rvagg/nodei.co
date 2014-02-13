@@ -24,7 +24,7 @@
     "level-ttl-cache": "~0.2.0",
     "memoize-async": "~0.0.0",
     "level-ttl": "~0.4.0",
-    "swig": "~0.14.0",
+    "swig": "~1.3.2",
     "bean": "~1.0.4",
     "bonzo": "~1.3.5",
     "traversty": "~1.0.4",

@@ -1,0 +1,63 @@
+<svg version="1.1"
+    baseProfile="full"
+    xmlns="http://www.w3.org/2000/svg"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns:ev="http://www.w3.org/2001/xml-events"
+    x="0px"
+    y="0px"
+    width="{{ params.width }}px"
+    height="{{ params.height }}px"
+    viewBox="0 0 {{ params.width }} {{ params.height }}"
+    enable-background="new 0 0 {{ params.width }} {{ params.height }}"
+  >
+
+  <g>
+    <rect x="1" y="1"
+        width="{{ params.width - 2 }}" height="{{ params.height - 2 }}"
+        rx="2" ry="2"
+        stroke="rgb(203, 56, 55)"
+        stroke-width="2"
+        fill="rgb(244, 244, 242)"
+    />
+  </g>
+
+  <g transform="translate({{ params.margin + 7 }}, {{ params.margin + 7 }})">
+    <g transform="scale(0.18)">
+      {% include "./npm-logo.svg" %}
+    </g>
+  </g>
+
+  <g font-family="Ubuntu Mono, monospace" font-size="13" fill="rgb(102, 102, 102)">
+
+    <text x="110" y="{{ params.margin + 15 }}" font-weight="bold" font-size="14.5">
+      npm install {{ params.installName }}
+    </text>
+
+    <text x="{{ params.margin + 106 }}" y="{{ params.margin + 30 }}">
+      {{ pkginfo.dependencies | default("0") }}
+      {% if pkginfo.dependencies == 1 %}
+        dependency
+      {% else %}
+        dependencies
+      {% endif %}
+    </text>
+
+    <text x="{{ params.margin + 106 }}" y="{{ params.margin + 42 }}">
+      {{ pkginfo.depended | default("0") }}
+      {% if pkginfo.depended == 1 %}
+        dependent
+      {% else %}
+        dependents
+      {% endif %}
+    </text>
+
+    <text x="{{ params.margin + 236 }}" y="{{ params.margin + 30 }}">
+      {{ params.versionText }}
+    </text>
+
+    <text x="{{ params.margin + 236 }}" y="{{ params.margin + 42 }}">
+      {{ params.updatedText }}
+    </text>
+  </g>
+
+</svg>

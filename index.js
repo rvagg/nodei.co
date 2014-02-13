@@ -15,6 +15,7 @@
 const path        = require('path')
     , fs          = require('fs')
     , Splinky     = require('splinky')
+    , swig        = require('swig')
     , redirector  = require('./lib/redirector')
     , isDev       = (/^dev/i).test(process.env.NODE_ENV)
 
@@ -32,7 +33,10 @@ require('restify-request')
 
 // init swig with 'root' param, this isn't done by `consolidate` but required by
 // swig if you want to reference templates from within templates
-require('swig').init({ root: path.join(__dirname, 'views'), cache: !isDev })
+swig.setDefaults({
+    root: path.join(__dirname, 'views')
+  , cache: isDev ? false : 'memory'
+})
 
 if (fs.existsSync(sslKeyFile) && fs.existsSync(sslCertFile)) {
   ssl = {
@@ -62,11 +66,18 @@ splinky.static({
 // their names which map to <name>.<suffix> and are processed by the
 // default processor listed here (although that can be changed on a per-
 //  controller basis)
-splinky.views({
-    path       : path.join(__dirname, './views')
-  , suffix     : 'html'
-  , processor  : 'swig'
-})
+splinky.views([
+    {
+        path       : path.join(__dirname, './views')
+      , suffix     : 'html'
+      , processor  : 'swig'
+    }
+  , {
+        path       : path.join(__dirname, './views')
+      , suffix     : 'svg'
+      , processor  : 'swig'
+    }
+])
 
 splinky.listen()
 
