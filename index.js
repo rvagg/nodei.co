@@ -16,6 +16,7 @@ const path        = require('path')
     , fs          = require('fs')
     , Splinky     = require('splinky')
     , swig        = require('swig')
+    , humanize    = require('humanize-number')
     , redirector  = require('./lib/redirector')
     , isDev       = (/^dev/i).test(process.env.NODE_ENV)
 
@@ -37,6 +38,9 @@ swig.setDefaults({
     root: path.join(__dirname, 'views')
   , cache: isDev ? false : 'memory'
 })
+
+swig.setFilter('humanize', humanize)
+
 
 if (fs.existsSync(sslKeyFile) && fs.existsSync(sslCertFile)) {
   ssl = {

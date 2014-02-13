@@ -43,7 +43,7 @@
     </text>
 
     <text x="{{ params.margin + 106 }}" y="{{ params.margin + 42 }}">
-      {{ pkginfo.depended | default("0") }}
+      {{ pkginfo.depended | default(0) | humanize }}
       {% if pkginfo.depended == 1 %}
         dependent
       {% else %}
