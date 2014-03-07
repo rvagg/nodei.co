@@ -14,7 +14,7 @@
     "level-live-stream": "~1.4.4",
     "level-sublevel": "~4.7.1",
     "level": "~0.10.0",
-    "npm-download-counts": "0.0.0",
+    "npm-download-counts": "^0.1.0",
     "restify-plugin-pre-path": "~2.6.1",
     "restify-plugin-pre-pause": "~2.6.1",
     "restify-plugin-gzip": "~2.6.1",
