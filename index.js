@@ -42,6 +42,7 @@ swig.setDefaults({
 swig.setFilter('humanize', humanize)
 
 
+/*
 if (fs.existsSync(sslKeyFile) && fs.existsSync(sslCertFile)) {
   ssl = {
       key  : fs.readFileSync(sslKeyFile, 'utf8')
@@ -51,6 +52,7 @@ if (fs.existsSync(sslKeyFile) && fs.existsSync(sslCertFile)) {
              })
   }
 } // else won't start with https, will just start an http
+*/
 
 var splinky = Splinky({ port: port })
 
