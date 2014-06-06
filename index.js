@@ -23,7 +23,7 @@ const path        = require('path')
     , defaultHost = 'nodei.co'
     , port        = process.env.PORT || 3000
     , sslKeyFile  = path.join(__dirname, 'keys/nodeico.key')
-    , sslCertFile = path.join(__dirname, 'keys/comodo-cert.pem')
+    , sslCertFile = path.join(__dirname, 'keys/nodeico.crt')
     , sslCaDir    = path.join(__dirname, 'keys/ca/')
 
 var ssl
