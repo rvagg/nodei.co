@@ -1,4 +1,5 @@
 const path        = require('path')
+    , fs          = require('fs')
     , http        = require('http')
     , swig        = require('swig')
     , humanize    = require('humanize-number')
@@ -23,6 +24,19 @@ const path        = require('path')
         , require('./lib/routes/npm-data')
         , require('./lib/routes/npm-pkg') // last
       ]
+
+bole.output({
+  level  : isDev ? 'debug' : 'info',
+  stream : process.stdout
+})
+
+if (process.env.LOG_FILE) {
+  console.log('Starting logging to %s', process.env.LOG_FILE)
+  bole.output({
+    level  : 'debug',
+    stream : fs.createWriteStream(process.env.LOG_FILE)
+  })
+}
 
 
 swig.setDefaults({
