@@ -21,7 +21,7 @@ const path        = require('path')
         , require('./lib/routes/script')
         , require('./lib/routes/npm-badge')
         , require('./lib/routes/npm-downloads-badge')
-        , require('./lib/routes/npm-data')
+        , require('./lib/routes/npm-api-info-passthrough')
         , require('./lib/routes/npm-pkg') // last
       ]
 

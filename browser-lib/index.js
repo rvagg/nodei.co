@@ -5,7 +5,15 @@ var $         = require('./ender')
   , $makemeone
   , $packageName
   , $monthsRadios
-  , selectedMonths = 12
+  , $histogramHeightRadios
+  , $optionsCheckboxes
+  , selectedMonths          = 12
+  , selectedHistogramHeight = 1
+  , selectedOptions         = {
+        downloads    : true
+      , downloadRank : true
+      , stars        : true
+    }
 
   , tmpl = {
         plain: {
@@ -13,15 +21,10 @@ var $         = require('./ender')
           , code : '<textarea class="copyable" readonly><a href="https://nodei.co/npm/{pkg}/"><img src="https://nodei.co/npm/{pkg}.png"></a></textarea>'
                  + '<textarea class="copyable" readonly>[![NPM](https://nodei.co/npm/{pkg}.png)](https://nodei.co/npm/{pkg}/)</textarea>'
         }
-      , downloads: {
-            img  : '<img src="/npm/{pkg}.png?downloads=true">'
-          , code : '<textarea class="copyable" readonly><a href="https://nodei.co/npm/{pkg}/"><img src="https://nodei.co/npm/{pkg}.png?downloads=true"></a></textarea>'
-                 + '<textarea class="copyable" readonly>[![NPM](https://nodei.co/npm/{pkg}.png?downloads=true)](https://nodei.co/npm/{pkg}/)</textarea>'
-        }
-      , 'downloads-stars': {
-            img  : '<img src="/npm/{pkg}.png?downloads=true&stars=true">'
-          , code : '<textarea class="copyable" readonly><a href="https://nodei.co/npm/{pkg}/"><img src="https://nodei.co/npm/{pkg}.png?downloads=true&stars=true"></a></textarea>'
-                 + '<textarea class="copyable" readonly>[![NPM](https://nodei.co/npm/{pkg}.png?downloads=true&stars=true)](https://nodei.co/npm/{pkg}/)</textarea>'
+      , 'all-options': {
+            img  : '<img src="/npm/{pkg}.png{params}">'
+          , code : '<textarea class="copyable double" readonly><a href="https://nodei.co/npm/{pkg}/"><img src="https://nodei.co/npm/{pkg}.png{params}"></a></textarea>'
+                 + '<textarea class="copyable double" readonly>[![NPM](https://nodei.co/npm/{pkg}.png{params})](https://nodei.co/npm/{pkg}/)</textarea>'
         }
       , compact: {
             img  : '<img src="/npm/{pkg}.png?compact=true">'
@@ -34,22 +37,21 @@ var $         = require('./ender')
                  + '<textarea class="copyable" readonly>[![NPM](https://nodei.co/npm/{pkg}.png?mini=true)](https://nodei.co/npm/{pkg}/)</textarea>'
         }
       , dl: {
-            img   : '<img src="/npm-dl/{pkg}.png">'
-          , imgM  : '<img src="/npm-dl/{pkg}.png?months={months}">'
-          , code  : '<textarea class="copyable" readonly><a href="https://nodei.co/npm/{pkg}/"><img src="https://nodei.co/npm-dl/{pkg}.png"></a></textarea>'
-                  + '<textarea class="copyable" readonly>[![NPM](https://nodei.co/npm-dl/{pkg}.png)](https://nodei.co/npm/{pkg}/)</textarea>'
-          , codeM : '<textarea class="copyable" readonly><a href="https://nodei.co/npm/{pkg}/"><img src="https://nodei.co/npm-dl/{pkg}.png?months={months}"></a></textarea>'
-                  + '<textarea class="copyable" readonly>[![NPM](https://nodei.co/npm-dl/{pkg}.png?months={months})](https://nodei.co/npm/{pkg}/)</textarea>'
+            img  : '<img src="/npm-dl/{pkg}.png{params}">'
+          , code : '<textarea class="copyable double" readonly><a href="https://nodei.co/npm/{pkg}/"><img src="https://nodei.co/npm-dl/{pkg}.png{params}"></a></textarea>'
+                 + '<textarea class="copyable double" readonly>[![NPM](https://nodei.co/npm-dl/{pkg}.png{params})](https://nodei.co/npm/{pkg}/)</textarea>'
         }
     }
 
-function tmplpkg (tmpl, pkg, months) {
-  return tmpl.replace(/\{pkg\}/g, pkg).replace(/\{months\}/g, months)
+function tmplpkg (tmpl, pkg, params) {
+  return tmpl
+    .replace(/\{pkg\}/g, pkg)
+    .replace(/\{params\}/g, params || '')
 }
 
 function packageExists (pkg, callback) {
   $.ajax({
-      url: '/npm/' + pkg + '.json'
+      url: '/api/npm/info/' + pkg
     , type: 'json'
     , method: 'get'
     , error: function () {
@@ -97,18 +99,44 @@ function makemeone () {
     $makemeone.down('.package-not-found, .package-not-valid').hide()
 
     placeBadges(pkg)
-    updateMonths()
+    updateDownloadOptions()
+    updateOptions()
   })
 }
 
 function placeBadge(type, pkg) {
   var t = tmpl[type]
-  $makemeone.down('.badge.' + type + ' .img').html(
-    tmplpkg(t[type == 'dl' && selectedMonths != 12 ? 'imgM' : 'img'], pkg, selectedMonths)
-  )
-  $makemeone.down('.badge.' + type + ' .code').html(
-    tmplpkg(t[type == 'dl' && selectedMonths != 12 ? 'codeM' : 'code'], pkg, selectedMonths)
-  )
+    , imgHtml
+    , codeHtml
+    , paramsA
+    , k
+    , params
+
+  if (type == 'all-options') {
+    paramsA = []
+    for (k in selectedOptions) {
+      if (selectedOptions.hasOwnProperty(k) && selectedOptions[k] === true)
+        paramsA.push(k + '=true')
+    }
+    params = paramsA.length ? '?' + paramsA.join('&') : ''
+    imgHtml = tmplpkg(t['img'], pkg, params)
+    codeHtml = tmplpkg(t['code'], pkg, params)
+  } else if (type == 'dl') {
+    paramsA = []
+    if (selectedMonths != 12)
+      paramsA.push('months=' + selectedMonths)
+    if (selectedHistogramHeight != 1)
+      paramsA.push('height=' + selectedHistogramHeight)
+    params = paramsA.length ? '?' + paramsA.join('&') : ''
+    imgHtml = tmplpkg(t['img'], pkg, params)
+    codeHtml = tmplpkg(t['code'], pkg, params)
+  } else {
+    imgHtml  = tmplpkg(t['img'], pkg)
+    codeHtml = tmplpkg(t['code'], pkg)
+  }
+
+  $makemeone.down('.badge.' + type + ' .img').html(imgHtml)
+  $makemeone.down('.badge.' + type + ' .code').html(codeHtml)
 }
 
 function placeBadges (pkg, justMonths) {
@@ -117,15 +145,31 @@ function placeBadges (pkg, justMonths) {
   Object.keys(tmpl).forEach(function (k) { placeBadge(k, pkg) })
 }
 
-function updateMonths () {
+function updateDownloadOptions () {
   selectedMonths = $monthsRadios.filter(function () { return this.checked }).val() || 12
+  selectedHistogramHeight = $histogramHeightRadios.filter(function () { return this.checked }).val() || 1
   placeBadges($packageName.val(), true)
 }
 
+function updateOptions () {
+  var k
+
+  for (k in selectedOptions) {
+    if (!selectedOptions.hasOwnProperty(k))
+      continue
+
+    selectedOptions[k] = $('#opt-' + k)[0] && $('#opt-' + k)[0].checked
+  }
+
+  placeBadge('all-options', $packageName.val())
+}
+
 $.domReady(function () {
-  $makemeone    = $('#makemeone')
-  $monthsRadios = $makemeone.down('.badge.dl [name=dl-months]')
-  $packageName  = $makemeone.down('[name=packageName]')
+  $makemeone             = $('#makemeone')
+  $monthsRadios          = $makemeone.down('.badge.dl [name=dl-months]')
+  $histogramHeightRadios = $makemeone.down('.badge.dl [name=dl-height]')
+  $optionsCheckboxes     = $makemeone.down('.badge.all-options [type=checkbox]')
+  $packageName           = $makemeone.down('[name=packageName]')
 
   $packageName
     .on('keydown', function (e) {
@@ -136,7 +180,9 @@ $.domReady(function () {
 
   $('.content').on('click', '.copyable', function (e) { e.target.select() })
 
-  $monthsRadios.on('click', updateMonths)
+  $monthsRadios.on('click', updateDownloadOptions)
+  $histogramHeightRadios.on('click', updateDownloadOptions)
+  $optionsCheckboxes.on('click', updateOptions)
 
   var pkg = window.location.hash
   if (pkg) {
