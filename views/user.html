@@ -1,0 +1,26 @@
+{% extends 'layout.html' %}
+
+{% block head %}
+  {{ head|raw }}
+{% endblock %}
+
+{% block content %}
+
+<h2>{{ user }}</h2>
+
+{% for pkg in packages %}
+<h3 align="center">{{ pkg }}</h3>
+
+<div style="width: 540px; float: left; text-align: center;">
+  <img src="/npm/{{ pkg }}.png?downloads=true&downloadRank=true&stars=true" alt="{{ pkg }}">
+</div>
+
+<div style="width: 540px; float: left; text-align: center;">
+  <img src="/npm-dl/{{ pkg }}.png?height=3" alt="{{ pkg }}">
+</div>
+
+<div style="clear: both;"></div>
+
+{% endfor %}
+
+{% endblock %}

@@ -21,6 +21,7 @@ const path        = require('path')
         , require('./lib/routes/script')
         , require('./lib/routes/npm-badge')
         , require('./lib/routes/npm-downloads-badge')
+        , require('./lib/routes/user')
         , require('./lib/routes/npm-api-info-passthrough')
         , require('./lib/routes/npm-pkg') // last
       ]
@@ -98,12 +99,16 @@ function handler (req, res) {
 }
 
 
-http.createServer(handler)
-  .on('error', function (err) {
-    log.error(err)
-    throw err
-  })
-  .listen(port, function (err) {
+module.exports = function () {
+  return http.createServer(handler)
+    .on('error', function (err) {
+      log.error(err)
+      throw err
+    })
+}
+
+if (require.main === module) {
+  module.exports().listen(port, function (err) {
     if (err) {
       log.error(err)
       throw err
@@ -114,3 +119,4 @@ http.createServer(handler)
     console.log('>> Running: http://localhost:' + port)
     console.log()
   })
+}

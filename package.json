@@ -35,7 +35,12 @@
     "qwery-mobile": false
   },
   "scripts": {
-    "install": "browserify browser-lib/index.js -o public/index.js"
+    "install": "browserify browser-lib/index.js -o public/index.js",
+    "test": "tape test/*-test.js"
   },
-  "private": true
+  "private": true,
+  "devDependencies": {
+    "servertest": "~1.0.2",
+    "tape": "~2.14.0"
+  }
 }
