@@ -1,4 +1,4 @@
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 (function (global){
 var ender   = require('ender-js')
   , $       = ender.noConflict(function () {})
@@ -12,7 +12,7 @@ require('traversty/ender_bridge')
 require('reqwest/src/ender')
 
 module.exports = $
-}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"bean/src/ender":5,"bonzo/src/ender":7,"domready/src/ender":10,"ender-js":11,"qwery-mobile/ender":12,"reqwest/src/ender":16,"traversty/ender_bridge":17}],2:[function(require,module,exports){
 var $         = require('./ender')
   , delayed   = require('delayed')
@@ -21,7 +21,15 @@ var $         = require('./ender')
   , $makemeone
   , $packageName
   , $monthsRadios
-  , selectedMonths = 12
+  , $histogramHeightRadios
+  , $optionsCheckboxes
+  , selectedMonths          = 12
+  , selectedHistogramHeight = 1
+  , selectedOptions         = {
+        downloads    : true
+      , downloadRank : true
+      , stars        : true
+    }
 
   , tmpl = {
         plain: {
@@ -29,15 +37,10 @@ var $         = require('./ender')
           , code : '<textarea class="copyable" readonly><a href="https://nodei.co/npm/{pkg}/"><img src="https://nodei.co/npm/{pkg}.png"></a></textarea>'
                  + '<textarea class="copyable" readonly>[![NPM](https://nodei.co/npm/{pkg}.png)](https://nodei.co/npm/{pkg}/)</textarea>'
         }
-      , downloads: {
-            img  : '<img src="/npm/{pkg}.png?downloads=true">'
-          , code : '<textarea class="copyable" readonly><a href="https://nodei.co/npm/{pkg}/"><img src="https://nodei.co/npm/{pkg}.png?downloads=true"></a></textarea>'
-                 + '<textarea class="copyable" readonly>[![NPM](https://nodei.co/npm/{pkg}.png?downloads=true)](https://nodei.co/npm/{pkg}/)</textarea>'
-        }
-      , 'downloads-stars': {
-            img  : '<img src="/npm/{pkg}.png?downloads=true&stars=true">'
-          , code : '<textarea class="copyable" readonly><a href="https://nodei.co/npm/{pkg}/"><img src="https://nodei.co/npm/{pkg}.png?downloads=true&stars=true"></a></textarea>'
-                 + '<textarea class="copyable" readonly>[![NPM](https://nodei.co/npm/{pkg}.png?downloads=true&stars=true)](https://nodei.co/npm/{pkg}/)</textarea>'
+      , 'all-options': {
+            img  : '<img src="/npm/{pkg}.png{params}">'
+          , code : '<textarea class="copyable double" readonly><a href="https://nodei.co/npm/{pkg}/"><img src="https://nodei.co/npm/{pkg}.png{params}"></a></textarea>'
+                 + '<textarea class="copyable double" readonly>[![NPM](https://nodei.co/npm/{pkg}.png{params})](https://nodei.co/npm/{pkg}/)</textarea>'
         }
       , compact: {
             img  : '<img src="/npm/{pkg}.png?compact=true">'
@@ -50,22 +53,21 @@ var $         = require('./ender')
                  + '<textarea class="copyable" readonly>[![NPM](https://nodei.co/npm/{pkg}.png?mini=true)](https://nodei.co/npm/{pkg}/)</textarea>'
         }
       , dl: {
-            img   : '<img src="/npm-dl/{pkg}.png">'
-          , imgM  : '<img src="/npm-dl/{pkg}.png?months={months}">'
-          , code  : '<textarea class="copyable" readonly><a href="https://nodei.co/npm/{pkg}/"><img src="https://nodei.co/npm-dl/{pkg}.png"></a></textarea>'
-                  + '<textarea class="copyable" readonly>[![NPM](https://nodei.co/npm-dl/{pkg}.png)](https://nodei.co/npm/{pkg}/)</textarea>'
-          , codeM : '<textarea class="copyable" readonly><a href="https://nodei.co/npm/{pkg}/"><img src="https://nodei.co/npm-dl/{pkg}.png?months={months}"></a></textarea>'
-                  + '<textarea class="copyable" readonly>[![NPM](https://nodei.co/npm-dl/{pkg}.png?months={months})](https://nodei.co/npm/{pkg}/)</textarea>'
+            img  : '<img src="/npm-dl/{pkg}.png{params}">'
+          , code : '<textarea class="copyable double" readonly><a href="https://nodei.co/npm/{pkg}/"><img src="https://nodei.co/npm-dl/{pkg}.png{params}"></a></textarea>'
+                 + '<textarea class="copyable double" readonly>[![NPM](https://nodei.co/npm-dl/{pkg}.png{params})](https://nodei.co/npm/{pkg}/)</textarea>'
         }
     }
 
-function tmplpkg (tmpl, pkg, months) {
-  return tmpl.replace(/\{pkg\}/g, pkg).replace(/\{months\}/g, months)
+function tmplpkg (tmpl, pkg, params) {
+  return tmpl
+    .replace(/\{pkg\}/g, pkg)
+    .replace(/\{params\}/g, params || '')
 }
 
 function packageExists (pkg, callback) {
   $.ajax({
-      url: '/npm/' + pkg + '.json'
+      url: '/api/npm/info/' + pkg
     , type: 'json'
     , method: 'get'
     , error: function () {
@@ -113,18 +115,44 @@ function makemeone () {
     $makemeone.down('.package-not-found, .package-not-valid').hide()
 
     placeBadges(pkg)
-    updateMonths()
+    updateDownloadOptions()
+    updateOptions()
   })
 }
 
 function placeBadge(type, pkg) {
   var t = tmpl[type]
-  $makemeone.down('.badge.' + type + ' .img').html(
-    tmplpkg(t[type == 'dl' && selectedMonths != 12 ? 'imgM' : 'img'], pkg, selectedMonths)
-  )
-  $makemeone.down('.badge.' + type + ' .code').html(
-    tmplpkg(t[type == 'dl' && selectedMonths != 12 ? 'codeM' : 'code'], pkg, selectedMonths)
-  )
+    , imgHtml
+    , codeHtml
+    , paramsA
+    , k
+    , params
+
+  if (type == 'all-options') {
+    paramsA = []
+    for (k in selectedOptions) {
+      if (selectedOptions.hasOwnProperty(k) && selectedOptions[k] === true)
+        paramsA.push(k + '=true')
+    }
+    params = paramsA.length ? '?' + paramsA.join('&') : ''
+    imgHtml = tmplpkg(t['img'], pkg, params)
+    codeHtml = tmplpkg(t['code'], pkg, params)
+  } else if (type == 'dl') {
+    paramsA = []
+    if (selectedMonths != 12)
+      paramsA.push('months=' + selectedMonths)
+    if (selectedHistogramHeight != 1)
+      paramsA.push('height=' + selectedHistogramHeight)
+    params = paramsA.length ? '?' + paramsA.join('&') : ''
+    imgHtml = tmplpkg(t['img'], pkg, params)
+    codeHtml = tmplpkg(t['code'], pkg, params)
+  } else {
+    imgHtml  = tmplpkg(t['img'], pkg)
+    codeHtml = tmplpkg(t['code'], pkg)
+  }
+
+  $makemeone.down('.badge.' + type + ' .img').html(imgHtml)
+  $makemeone.down('.badge.' + type + ' .code').html(codeHtml)
 }
 
 function placeBadges (pkg, justMonths) {
@@ -133,15 +161,31 @@ function placeBadges (pkg, justMonths) {
   Object.keys(tmpl).forEach(function (k) { placeBadge(k, pkg) })
 }
 
-function updateMonths () {
+function updateDownloadOptions () {
   selectedMonths = $monthsRadios.filter(function () { return this.checked }).val() || 12
+  selectedHistogramHeight = $histogramHeightRadios.filter(function () { return this.checked }).val() || 1
   placeBadges($packageName.val(), true)
 }
 
+function updateOptions () {
+  var k
+
+  for (k in selectedOptions) {
+    if (!selectedOptions.hasOwnProperty(k))
+      continue
+
+    selectedOptions[k] = $('#opt-' + k)[0] && $('#opt-' + k)[0].checked
+  }
+
+  placeBadge('all-options', $packageName.val())
+}
+
 $.domReady(function () {
-  $makemeone    = $('#makemeone')
-  $monthsRadios = $makemeone.down('.badge.dl [name=dl-months]')
-  $packageName  = $makemeone.down('[name=packageName]')
+  $makemeone             = $('#makemeone')
+  $monthsRadios          = $makemeone.down('.badge.dl [name=dl-months]')
+  $histogramHeightRadios = $makemeone.down('.badge.dl [name=dl-height]')
+  $optionsCheckboxes     = $makemeone.down('.badge.all-options [type=checkbox]')
+  $packageName           = $makemeone.down('[name=packageName]')
 
   $packageName
     .on('keydown', function (e) {
@@ -152,7 +196,9 @@ $.domReady(function () {
 
   $('.content').on('click', '.copyable', function (e) { e.target.select() })
 
-  $monthsRadios.on('click', updateMonths)
+  $monthsRadios.on('click', updateDownloadOptions)
+  $histogramHeightRadios.on('click', updateDownloadOptions)
+  $optionsCheckboxes.on('click', updateOptions)
 
   var pkg = window.location.hash
   if (pkg) {
@@ -163,18 +209,38 @@ $.domReady(function () {
 
 },{"../lib/valid-name":3,"./ender":1,"delayed":8}],3:[function(require,module,exports){
 // from normalize-package-data/lib/fixer.js
-function validName (name) {
-  if (name.charAt(0) === '.' ||
-      name.match(/[\/@\s\+%:]/) ||
-      name !== encodeURIComponent(name) ||
-      name.toLowerCase() === 'node_modules' ||
-      name.toLowerCase() === 'favicon.ico') {
+function isValidScopedPackageName(spec) {
+  if (spec.charAt(0) !== '@') return false
+
+  var rest = spec.slice(1).split('/')
+  if (rest.length !== 2) return false
+
+  return rest[0] && rest[1] &&
+    rest[0] === encodeURIComponent(rest[0]) &&
+    rest[1] === encodeURIComponent(rest[1])
+}
+
+function isCorrectlyEncodedName(spec) {
+  return !spec.match(/[\/@\s\+%:]/) &&
+    spec === encodeURIComponent(spec)
+}
+
+function ensureValidName (name, strict, allowLegacyCase) {
+  if (name.charAt(0) === "." ||
+      !(isValidScopedPackageName(name) || isCorrectlyEncodedName(name)) ||
+      (strict && (!allowLegacyCase) && name !== name.toLowerCase()) ||
+      name.toLowerCase() === "node_modules" ||
+      name.toLowerCase() === "favicon.ico") {
         return false
   }
   return true
 }
 
-module.exports = validName
+module.exports = function (name) { return ensureValidName(name, false, true) }
+
+module.exports.pkgregex = '(:?@[A-Za-z0-9]+/)?[^/@\\s\\+%:]+'
+module.exports.pkgregex = '[^/@\\s\\+%:]+'
+
 },{}],4:[function(require,module,exports){
 /*!
   * Bean - copyright (c) Jacob Thornton 2011-2012
@@ -1018,7 +1084,6 @@ module.exports = validName
         , script: noscope, style: noscope, link: noscope, param: noscope, base: noscope
       }
     , stateAttributes = /^(checked|selected|disabled)$/
-    , ie = /msie/i.test(navigator.userAgent)
     , hasClass, addClass, removeClass
     , uidMap = {}
     , uuids = 0
@@ -1027,73 +1092,31 @@ module.exports = validName
     , px = 'px'
     , setAttribute = 'setAttribute'
     , getAttribute = 'getAttribute'
-    , byTag = 'getElementsByTagName'
     , features = function() {
         var e = doc.createElement('p')
-        e.innerHTML = '<a href="#x">x</a><table style="float:left;"></table>'
         return {
-          hrefExtended: e[byTag]('a')[0][getAttribute]('href') != '#x' // IE < 8
-        , autoTbody: e[byTag]('tbody').length !== 0 // IE < 8
-        , computedStyle: doc.defaultView && doc.defaultView.getComputedStyle
-        , cssFloat: e[byTag]('table')[0].style.styleFloat ? 'styleFloat' : 'cssFloat'
-        , transform: function () {
+          transform: function () {
             var props = ['transform', 'webkitTransform', 'MozTransform', 'OTransform', 'msTransform'], i
             for (i = 0; i < props.length; i++) {
               if (props[i] in e.style) return props[i]
             }
           }()
         , classList: 'classList' in e
-        , opasity: function () {
-            return typeof doc.createElement('a').style.opacity !== 'undefined'
-          }()
         }
       }()
-    , trimReplace = /(^\s*|\s*$)/g
     , whitespaceRegex = /\s+/
     , toString = String.prototype.toString
     , unitless = { lineHeight: 1, zoom: 1, zIndex: 1, opacity: 1, boxFlex: 1, WebkitBoxFlex: 1, MozBoxFlex: 1 }
     , query = doc.querySelectorAll && function (selector) { return doc.querySelectorAll(selector) }
-    , trim = String.prototype.trim ?
-        function (s) {
-          return s.trim()
-        } :
-        function (s) {
-          return s.replace(trimReplace, '')
-        }
 
-    , getStyle = features.computedStyle
-        ? function (el, property) {
-            var value = null
-              , computed = doc.defaultView.getComputedStyle(el, '')
-            computed && (value = computed[property])
-            return el.style[property] || value
-          }
-        : !(ie && html.currentStyle)
-          ? function (el, property) {
-              return el.style[property]
-            }
-          :
-          /**
-           * @param {Element} el
-           * @param {string} property
-           * @return {string|number}
-           */
-          function (el, property) {
-            var val, value
-            if (property == 'opacity' && !features.opasity) {
-              val = 100
-              try {
-                val = el['filters']['DXImageTransform.Microsoft.Alpha'].opacity
-              } catch (e1) {
-                try {
-                  val = el['filters']('alpha').opacity
-                } catch (e2) {}
-              }
-              return val / 100
-            }
-            value = el.currentStyle ? el.currentStyle[property] : null
-            return el.style[property] || value
-          }
+
+  function getStyle(el, property) {
+    var value = null
+      , computed = doc.defaultView.getComputedStyle(el, '')
+    computed && (value = computed[property])
+    return el.style[property] || value
+  }
+
 
   function isNode(node) {
     return node && node.nodeName && (node.nodeType == 1 || node.nodeType == 11)
@@ -1231,8 +1254,7 @@ module.exports = validName
    */
   function styleProperty(p) {
       (p == 'transform' && (p = features.transform)) ||
-        (/^transform-?[Oo]rigin$/.test(p) && (p = features.transform + 'Origin')) ||
-        (p == 'float' && (p = features.cssFloat))
+        (/^transform-?[Oo]rigin$/.test(p) && (p = features.transform + 'Origin'))
       return p ? camelize(p) : null
   }
 
@@ -1301,10 +1323,10 @@ module.exports = validName
       return classReg(c).test(el.className)
     }
     addClass = function (el, c) {
-      el.className = trim(el.className + ' ' + c)
+      el.className = (el.className + ' ' + c).trim()
     }
     removeClass = function (el, c) {
-      el.className = trim(el.className.replace(classReg(c), ' '))
+      el.className = (el.className.replace(classReg(c), ' ')).trim()
     }
   }
 
@@ -1318,11 +1340,11 @@ module.exports = validName
    * })
    *
    * @param {Element} el
-   * @param {function (Element)|string}
+   * @param {function (Element)|string} v
    * @return {string}
    */
   function setter(el, v) {
-    return typeof v == 'function' ? v(el) : v
+    return typeof v == 'function' ? v.call(el, el) : v
   }
 
   function scroll(x, y, type) {
@@ -1410,7 +1432,7 @@ module.exports = validName
      */
     , html: function (h, opt_text) {
         var method = opt_text
-              ? html.textContent === undefined ? 'innerText' : 'textContent'
+              ? 'textContent'
               : 'innerHTML'
           , that = this
           , append = function (el, i) {
@@ -1554,8 +1576,12 @@ module.exports = validName
        * @return {Bonzo}
        */
     , replaceWith: function (node) {
-        bonzo(normalize(node)).insertAfter(this)
-        return this.remove()
+        var that = this
+        return this.each(function (el, i) {
+          each(normalize(node, that, i), function (i) {
+            el[parentNode] && el[parentNode].replaceChild(i, el)
+          })
+        })
       }
 
       /**
@@ -1779,16 +1805,6 @@ module.exports = validName
           iter[o] = opt_v
         }
 
-        if (!features.opasity && 'opacity' in iter) {
-          // oh this 'ol gamut
-          iter.filter = iter.opacity != null && iter.opacity !== ''
-            ? 'alpha(opacity=' + (iter.opacity * 100) + ')'
-            : ''
-          // give it layout
-          iter.zoom = o.zoom || 1
-          ;delete iter.opacity
-        }
-
         function fn(el, p, v) {
           for (var k in iter) {
             if (iter.hasOwnProperty(k)) {
@@ -1899,8 +1915,7 @@ module.exports = validName
         return typeof opt_v == 'undefined' ?
           !el ? null : specialAttributes.test(k) ?
             stateAttributes.test(k) && typeof el[k] == 'string' ?
-              true : el[k] : (k == 'href' || k =='src') && features.hrefExtended ?
-                el[getAttribute](k, 2) : el[getAttribute](k) :
+              true : el[k] :  el[getAttribute](k) :
           this.each(function (el) {
             specialAttributes.test(k) ? (el[k] = setter(el, opt_v)) : el[setAttribute](k, setter(el, opt_v))
           })
@@ -2078,16 +2093,13 @@ module.exports = validName
           , dep = p ? p[2] + 1 : 1
           , ns = p && p[3]
           , pn = parentNode
-          , tb = features.autoTbody && p && p[0] == '<table>' && !(/<tbody/i).test(node)
 
         el.innerHTML = p ? (p[0] + node + p[1]) : node
         while (dep--) el = el.firstChild
         // for IE NoScope, we may insert cruft at the begining just to get it to work
         if (ns && el && el.nodeType !== 1) el = el.nextSibling
         do {
-          // tbody special case for IE<8, creates tbody on any empty table
-          // we don't want it if we're just after a <thead>, <caption>, etc.
-          if ((!tag || el.nodeType == 1) && (!tb || (el.tagName && el.tagName != 'TBODY'))) {
+          if (!tag || el.nodeType == 1) {
             els.push(el)
           }
         } while (el = el.nextSibling)
@@ -2115,25 +2127,17 @@ module.exports = validName
 
   bonzo.viewport = function () {
     return {
-        width: ie ? html.clientWidth : win.innerWidth
-      , height: ie ? html.clientHeight : win.innerHeight
+        width: win.innerWidth
+      , height: win.innerHeight
     }
   }
 
   bonzo.isAncestor = 'compareDocumentPosition' in html ?
     function (container, element) {
       return (container.compareDocumentPosition(element) & 16) == 16
-    } : 'contains' in html ?
-    function (container, element) {
-      return container !== element && container.contains(element);
     } :
     function (container, element) {
-      while (element = element[parentNode]) {
-        if (element === container) {
-          return true
-        }
-      }
-      return false
+      return container !== element && container.contains(element);
     }
 
   return bonzo
@@ -2358,60 +2362,35 @@ module.exports = validName
 }));
 },{}],9:[function(require,module,exports){
 /*!
-  * domready (c) Dustin Diaz 2012 - License MIT
+  * domready (c) Dustin Diaz 2014 - License MIT
   */
 !function (name, definition) {
+
   if (typeof module != 'undefined') module.exports = definition()
   else if (typeof define == 'function' && typeof define.amd == 'object') define(definition)
   else this[name] = definition()
-}('domready', function (ready) {
 
-  var fns = [], fn, f = false
+}('domready', function () {
+
+  var fns = [], listener
     , doc = document
-    , testEl = doc.documentElement
-    , hack = testEl.doScroll
+    , hack = doc.documentElement.doScroll
     , domContentLoaded = 'DOMContentLoaded'
-    , addEventListener = 'addEventListener'
-    , onreadystatechange = 'onreadystatechange'
-    , readyState = 'readyState'
-    , loadedRgx = hack ? /^loaded|^c/ : /^loaded|c/
-    , loaded = loadedRgx.test(doc[readyState])
+    , loaded = (hack ? /^loaded|^c/ : /^loaded|^i|^c/).test(doc.readyState)
 
-  function flush(f) {
+
+  if (!loaded)
+  doc.addEventListener(domContentLoaded, listener = function () {
+    doc.removeEventListener(domContentLoaded, listener)
     loaded = 1
-    while (f = fns.shift()) f()
-  }
-
-  doc[addEventListener] && doc[addEventListener](domContentLoaded, fn = function () {
-    doc.removeEventListener(domContentLoaded, fn, f)
-    flush()
-  }, f)
-
-
-  hack && doc.attachEvent(onreadystatechange, fn = function () {
-    if (/^c/.test(doc[readyState])) {
-      doc.detachEvent(onreadystatechange, fn)
-      flush()
-    }
+    while (listener = fns.shift()) listener()
   })
 
-  return (ready = hack ?
-    function (fn) {
-      self != top ?
-        loaded ? fn() : fns.push(fn) :
-        function () {
-          try {
-            testEl.doScroll('left')
-          } catch (e) {
-            return setTimeout(function() { ready(fn) }, 50)
-          }
-          fn()
-        }()
-    } :
-    function (fn) {
-      loaded ? fn() : fns.push(fn)
-    })
-})
+  return function (fn) {
+    loaded ? setTimeout(fn, 0) : fns.push(fn)
+  }
+
+});
 
 },{}],10:[function(require,module,exports){
 !function ($) {
@@ -2431,7 +2410,7 @@ module.exports = validName
   * http://ender.jit.su
   * License MIT
   */
-(function (context) {
+(function (context, window, document) {
 
   // a global object for node.js module compatiblity
   // ============================================
@@ -2439,7 +2418,7 @@ module.exports = validName
   context['global'] = context
 
   // Implements simple module system
-  // losely based on CommonJS Modules spec v1.1.1
+  // loosely based on CommonJS Modules spec v1.1.1
   // ============================================
 
   var modules = {}
@@ -2448,14 +2427,21 @@ module.exports = validName
     , oldRequire = context['require']
     , oldProvide = context['provide']
 
-  function require (identifier) {
+  /**
+   * @param {string} name
+   */
+  function require(name) {
     // modules can be required from ender's build system, or found on the window
-    var module = modules['$' + identifier] || window[identifier]
-    if (!module) throw new Error("Ender Error: Requested module '" + identifier + "' has not been defined.")
+    var module = modules['$' + name] || window[name]
+    if (!module) throw new Error("Ender Error: Requested module '" + name + "' has not been defined.")
     return module
   }
 
-  function provide (name, what) {
+  /**
+   * @param {string} name
+   * @param {*}      what
+   */
+  function provide(name, what) {
     return (modules['$' + name] = what)
   }
 
@@ -2466,35 +2452,69 @@ module.exports = validName
     for (var k in o2) k != 'noConflict' && k != '_VERSION' && (o[k] = o2[k])
     return o
   }
-
+  
   /**
-   * main Ender return object
-   * @constructor
-   * @param {Array|Node|string} s a CSS selector or DOM node(s)
-   * @param {Array.|Node} r a root node(s)
+   * @param   {*}  o  is an item to count
+   * @return  {number|boolean}
    */
-  function Ender(s, r) {
-    var elements
-      , i
-
-    this.selector = s
-    // string || node || nodelist || window
-    if (typeof s == 'undefined') {
-      elements = []
-      this.selector = ''
-    } else if (typeof s == 'string' || s.nodeName || (s.length && 'item' in s) || s == window) {
-      elements = ender._select(s, r)
-    } else {
-      elements = isFinite(s.length) ? s : [s]
-    }
-    this.length = elements.length
-    for (i = this.length; i--;) this[i] = elements[i]
+  function count(o) {
+    if (typeof o != 'object' || !o || o.nodeType || o === window)
+      return false
+    return typeof (o = o.length) == 'number' && o === o ? o : false
   }
 
   /**
-   * @param {function(el, i, inst)} fn
-   * @param {Object} opt_scope
-   * @returns {Ender}
+   * @constructor
+   * @param  {*=}      item   selector|node|collection|callback|anything
+   * @param  {Object=} root   node(s) from which to base selector queries
+   */  
+  function Ender(item, root) {
+    var i
+    this.length = 0 // Ensure that instance owns length
+
+    if (typeof item == 'string')
+      // Start @ strings so the result parlays into the other checks
+      // The .selector prop only applies to strings
+      item = ender['_select'](this['selector'] = item, root)
+
+    if (null == item)
+      return this // Do not wrap null|undefined
+
+    if (typeof item == 'function')
+      ender['_closure'](item, root)
+
+    // DOM node | scalar | not array-like
+    else if (false === (i = count(item)))
+      this[this.length++] = item
+
+    // Array-like - Bitwise ensures integer length:
+    else for (this.length = i = i > 0 ? i >> 0 : 0; i--;)
+      this[i] = item[i]
+  }
+  
+  /**
+   * @param  {*=}      item   selector|node|collection|callback|anything
+   * @param  {Object=} root   node(s) from which to base selector queries
+   * @return {Ender}
+   */
+  function ender(item, root) {
+    return new Ender(item, root)
+  }
+
+  ender['_VERSION'] = '0.4.x'
+
+  // Sync the prototypes for jQuery compatibility
+  ender['fn'] = ender.prototype = Ender.prototype 
+
+  Ender.prototype['$'] = ender // handy reference to self
+
+  // dev tools secret sauce
+  Ender.prototype['splice'] = function () { throw new Error('Not implemented') }
+  
+  /**
+   * @param   {function(*, number, Ender)} fn
+   * @param   {Object=} opt_scope
+   * @return  {Ender}
    */
   Ender.prototype['forEach'] = function (fn, opt_scope) {
     var i, l
@@ -2505,47 +2525,51 @@ module.exports = validName
     return this
   }
 
-  Ender.prototype.$ = ender // handy reference to self
-
-  // dev tools secret sauce
-  Ender.prototype.splice = function () { throw new Error('Not implemented') }
-
-  function ender(s, r) {
-    return new Ender(s, r)
-  }
-
-  ender['_VERSION'] = '0.4.5'
-
-  ender.fn = Ender.prototype // for easy compat to jQuery plugins
-
-  ender.ender = function (o, chain) {
+  /**
+   * @param {Object|Function} o
+   * @param {boolean=}        chain
+   */
+  ender['ender'] = function (o, chain) {
     aug(chain ? Ender.prototype : ender, o)
   }
 
-  ender._select = function (s, r) {
-    if (typeof s == 'string') return (r || document).querySelectorAll(s)
-    if (s.nodeName) return [s]
-    return s
+  /**
+   * @param {string}  s
+   * @param {Node=}   r
+   */
+  ender['_select'] = function (s, r) {
+    return s ? (r || document).querySelectorAll(s) : []
   }
 
+  /**
+   * @param {Function} fn
+   */
+  ender['_closure'] = function (fn) {
+    fn.call(document, ender)
+  }
 
-  // use callback to receive Ender's require & provide and remove them from global
-  ender.noConflict = function (callback) {
+  /**
+   * @param {(boolean|Function)=} fn  optional flag or callback
+   * To unclaim the global $, use no args. To unclaim *all* ender globals, 
+   * use `true` or a callback that receives (require, provide, ender)
+   */
+  ender['noConflict'] = function (fn) {
     context['$'] = old
-    if (callback) {
+    if (fn) {
       context['provide'] = oldProvide
       context['require'] = oldRequire
       context['ender'] = oldEnder
-      if (typeof callback == 'function') callback(require, provide, this)
+      typeof fn == 'function' && fn(require, provide, this)
     }
     return this
   }
 
-  if (typeof module !== 'undefined' && module.exports) module.exports = ender
+  if (typeof module !== 'undefined' && module['exports']) module['exports'] = ender
   // use subscript notation as extern for Closure compilation
+  // developers.google.com/closure/compiler/docs/api-tutorial3
   context['ender'] = context['$'] = ender
 
-}(this));
+}(this, window, document));
 },{}],12:[function(require,module,exports){
 (function ($) {
   var q = function () {
@@ -2692,10 +2716,9 @@ module.exports = validName
 }, this);
 },{}],14:[function(require,module,exports){
 /*!
-  * @preserve Qwery - A Blazing Fast query selector engine
+  * @preserve Qwery - A selector engine
   * https://github.com/ded/qwery
-  * copyright Dustin Diaz 2012
-  * MIT License
+  * (c) Dustin Diaz 2014 | License MIT
   */
 
 (function (name, context, definition) {
@@ -2703,77 +2726,32 @@ module.exports = validName
   else if (typeof define == 'function' && define.amd) define(definition)
   else context[name] = definition()
 })('qwery', this, function () {
-  var doc = document
+
+  var classOnly = /^\.([\w\-]+)$/
+    , doc = document
+    , win = window
     , html = doc.documentElement
-    , byClass = 'getElementsByClassName'
-    , byTag = 'getElementsByTagName'
-    , qSA = 'querySelectorAll'
-    , useNativeQSA = 'useNativeQSA'
-    , tagName = 'tagName'
     , nodeType = 'nodeType'
-    , select // main select() method, assign later
-
-    , id = /#([\w\-]+)/
-    , clas = /\.[\w\-]+/g
-    , idOnly = /^#([\w\-]+)$/
-    , classOnly = /^\.([\w\-]+)$/
-    , tagOnly = /^([\w\-]+)$/
-    , tagAndOrClass = /^([\w]+)?\.([\w\-]+)$/
-    , splittable = /(^|,)\s*[>~+]/
-    , normalizr = /^\s+|\s*([,\s\+\~>]|$)\s*/g
-    , splitters = /[\s\>\+\~]/
-    , splittersMore = /(?![\s\w\-\/\?\&\=\:\.\(\)\!,@#%<>\{\}\$\*\^'"]*\]|[\s\w\+\-]*\))/
-    , specialChars = /([.*+?\^=!:${}()|\[\]\/\\])/g
-    , simple = /^(\*|[a-z0-9]+)?(?:([\.\#]+[\w\-\.#]+)?)/
-    , attr = /\[([\w\-]+)(?:([\|\^\$\*\~]?\=)['"]?([ \w\-\/\?\&\=\:\.\(\)\!,@#%<>\{\}\$\*\^]+)["']?)?\]/
-    , pseudo = /:([\w\-]+)(\(['"]?([^()]+)['"]?\))?/
-    , easy = new RegExp(idOnly.source + '|' + tagOnly.source + '|' + classOnly.source)
-    , dividers = new RegExp('(' + splitters.source + ')' + splittersMore.source, 'g')
-    , tokenizr = new RegExp(splitters.source + splittersMore.source)
-    , chunker = new RegExp(simple.source + '(' + attr.source + ')?' + '(' + pseudo.source + ')?')
-
-  var walker = {
-      ' ': function (node) {
-        return node && node !== html && node.parentNode
-      }
-    , '>': function (node, contestant) {
-        return node && node.parentNode == contestant.parentNode && node.parentNode
-      }
-    , '~': function (node) {
-        return node && node.previousSibling
-      }
-    , '+': function (node, contestant, p1, p2) {
-        if (!node) return false
-        return (p1 = previous(node)) && (p2 = previous(contestant)) && p1 == p2 && p1
-      }
+  var isAncestor = 'compareDocumentPosition' in html ?
+    function (element, container) {
+      return (container.compareDocumentPosition(element) & 16) == 16
+    } :
+    function (element, container) {
+      container = container == doc || container == window ? html : container
+      return container !== element && container.contains(element)
     }
 
-  function cache() {
-    this.c = {}
-  }
-  cache.prototype = {
-    g: function (k) {
-      return this.c[k] || undefined
-    }
-  , s: function (k, v, r) {
-      v = r ? new RegExp(v) : v
-      return (this.c[k] = v)
-    }
+  function toArray(ar) {
+    return [].slice.call(ar, 0)
   }
 
-  var classCache = new cache()
-    , cleanCache = new cache()
-    , attrCache = new cache()
-    , tokenCache = new cache()
-
-  function classRegex(c) {
-    return classCache.g(c) || classCache.s(c, '(^|\\s+)' + c + '(\\s+|$)', 1)
+  function isNode(el) {
+    var t
+    return el && typeof el === 'object' && (t = el.nodeType) && (t == 1 || t == 9)
   }
 
-  // not quite as fast as inline loops in older browsers so don't use liberally
-  function each(a, fn) {
-    var i = 0, l = a.length
-    for (; i < l; i++) fn(a[i])
+  function arrayLike(o) {
+    return (typeof o === 'object' && isFinite(o.length))
   }
 
   function flatten(ar) {
@@ -2781,153 +2759,20 @@ module.exports = validName
     return r
   }
 
-  function arrayify(ar) {
-    var i = 0, l = ar.length, r = []
-    for (; i < l; i++) r[i] = ar[i]
-    return r
-  }
-
-  function previous(n) {
-    while (n = n.previousSibling) if (n[nodeType] == 1) break;
-    return n
-  }
-
-  function q(query) {
-    return query.match(chunker)
-  }
-
-  // called using `this` as element and arguments from regex group results.
-  // given => div.hello[title="world"]:foo('bar')
-  // div.hello[title="world"]:foo('bar'), div, .hello, [title="world"], title, =, world, :foo('bar'), foo, ('bar'), bar]
-  function interpret(whole, tag, idsAndClasses, wholeAttribute, attribute, qualifier, value, wholePseudo, pseudo, wholePseudoVal, pseudoVal) {
-    var i, m, k, o, classes
-    if (this[nodeType] !== 1) return false
-    if (tag && tag !== '*' && this[tagName] && this[tagName].toLowerCase() !== tag) return false
-    if (idsAndClasses && (m = idsAndClasses.match(id)) && m[1] !== this.id) return false
-    if (idsAndClasses && (classes = idsAndClasses.match(clas))) {
-      for (i = classes.length; i--;) if (!classRegex(classes[i].slice(1)).test(this.className)) return false
-    }
-    if (pseudo && qwery.pseudos[pseudo] && !qwery.pseudos[pseudo](this, pseudoVal)) return false
-    if (wholeAttribute && !value) { // select is just for existance of attrib
-      o = this.attributes
-      for (k in o) {
-        if (Object.prototype.hasOwnProperty.call(o, k) && (o[k].name || k) == attribute) {
-          return this
-        }
-      }
-    }
-    if (wholeAttribute && !checkAttr(qualifier, getAttr(this, attribute) || '', value)) {
-      // select is for attrib equality
-      return false
-    }
-    return this
-  }
-
-  function clean(s) {
-    return cleanCache.g(s) || cleanCache.s(s, s.replace(specialChars, '\\$1'))
-  }
-
-  function checkAttr(qualify, actual, val) {
-    switch (qualify) {
-    case '=':
-      return actual == val
-    case '^=':
-      return actual.match(attrCache.g('^=' + val) || attrCache.s('^=' + val, '^' + clean(val), 1))
-    case '$=':
-      return actual.match(attrCache.g('$=' + val) || attrCache.s('$=' + val, clean(val) + '$', 1))
-    case '*=':
-      return actual.match(attrCache.g(val) || attrCache.s(val, clean(val), 1))
-    case '~=':
-      return actual.match(attrCache.g('~=' + val) || attrCache.s('~=' + val, '(?:^|\\s+)' + clean(val) + '(?:\\s+|$)', 1))
-    case '|=':
-      return actual.match(attrCache.g('|=' + val) || attrCache.s('|=' + val, '^' + clean(val) + '(-|$)', 1))
-    }
-    return 0
-  }
-
-  // given a selector, first check for simple cases then collect all base candidate matches and filter
-  function _qwery(selector, _root) {
-    var r = [], ret = [], i, l, m, token, tag, els, intr, item, root = _root
-      , tokens = tokenCache.g(selector) || tokenCache.s(selector, selector.split(tokenizr))
-      , dividedTokens = selector.match(dividers)
-
-    if (!tokens.length) return r
-
-    token = (tokens = tokens.slice(0)).pop() // copy cached tokens, take the last one
-    if (tokens.length && (m = tokens[tokens.length - 1].match(idOnly))) root = byId(_root, m[1])
-    if (!root) return r
-
-    intr = q(token)
-    // collect base candidates to filter
-    els = root !== _root && root[nodeType] !== 9 && dividedTokens && /^[+~]$/.test(dividedTokens[dividedTokens.length - 1]) ?
-      function (r) {
-        while (root = root.nextSibling) {
-          root[nodeType] == 1 && (intr[1] ? intr[1] == root[tagName].toLowerCase() : 1) && (r[r.length] = root)
-        }
-        return r
-      }([]) :
-      root[byTag](intr[1] || '*')
-    // filter elements according to the right-most part of the selector
-    for (i = 0, l = els.length; i < l; i++) {
-      if (item = interpret.apply(els[i], intr)) r[r.length] = item
-    }
-    if (!tokens.length) return r
-
-    // filter further according to the rest of the selector (the left side)
-    each(r, function (e) { if (ancestorMatch(e, tokens, dividedTokens)) ret[ret.length] = e })
-    return ret
-  }
-
-  // compare element to a selector
-  function is(el, selector, root) {
-    if (isNode(selector)) return el == selector
-    if (arrayLike(selector)) return !!~flatten(selector).indexOf(el) // if selector is an array, is el a member?
-
-    var selectors = selector.split(','), tokens, dividedTokens
-    while (selector = selectors.pop()) {
-      tokens = tokenCache.g(selector) || tokenCache.s(selector, selector.split(tokenizr))
-      dividedTokens = selector.match(dividers)
-      tokens = tokens.slice(0) // copy array
-      if (interpret.apply(el, q(tokens.pop())) && (!tokens.length || ancestorMatch(el, tokens, dividedTokens, root))) {
-        return true
-      }
-    }
-    return false
-  }
-
-  // given elements matching the right-most part of a selector, filter out any that don't match the rest
-  function ancestorMatch(el, tokens, dividedTokens, root) {
-    var cand
-    // recursively work backwards through the tokens and up the dom, covering all options
-    function crawl(e, i, p) {
-      while (p = walker[dividedTokens[i]](p, e)) {
-        if (isNode(p) && (interpret.apply(p, q(tokens[i])))) {
-          if (i) {
-            if (cand = crawl(p, i - 1, p)) return cand
-          } else return p
-        }
-      }
-    }
-    return (cand = crawl(el, tokens.length - 1, el)) && (!root || isAncestor(cand, root))
-  }
-
-  function isNode(el, t) {
-    return el && typeof el === 'object' && (t = el[nodeType]) && (t == 1 || t == 9)
-  }
-
   function uniq(ar) {
-    var a = [], i, j;
-    o:
-    for (i = 0; i < ar.length; ++i) {
-      for (j = 0; j < a.length; ++j) if (a[j] == ar[i]) continue o
+    var a = [], i, j
+    label:
+    for (i = 0; i < ar.length; i++) {
+      for (j = 0; j < a.length; j++) {
+        if (a[j] == ar[i]) {
+          continue label
+        }
+      }
       a[a.length] = ar[i]
     }
     return a
   }
 
-  function arrayLike(o) {
-    return (typeof o === 'object' && isFinite(o.length))
-  }
 
   function normalizeRoot(root) {
     if (!root) return doc
@@ -2936,138 +2781,42 @@ module.exports = validName
     return root
   }
 
-  function byId(root, id, el) {
-    // if doc, query on it, else query the parent doc or if a detached fragment rewrite the query and run on the fragment
-    return root[nodeType] === 9 ? root.getElementById(id) :
-      root.ownerDocument &&
-        (((el = root.ownerDocument.getElementById(id)) && isAncestor(el, root) && el) ||
-          (!isAncestor(root, root.ownerDocument) && select('[id="' + id + '"]', root)[0]))
-  }
-
-  function qwery(selector, _root) {
-    var m, el, root = normalizeRoot(_root)
-
-    // easy, fast cases that we can dispatch with simple DOM calls
+  /**
+   * @param {string|Array.<Element>|Element|Node} selector
+   * @param {string|Array.<Element>|Element|Node=} opt_root
+   * @return {Array.<Element>}
+   */
+  function qwery(selector, opt_root) {
+    var m, root = normalizeRoot(opt_root)
     if (!root || !selector) return []
-    if (selector === window || isNode(selector)) {
-      return !_root || (selector !== window && isNode(root) && isAncestor(selector, root)) ? [selector] : []
+    if (selector === win || isNode(selector)) {
+      return !opt_root || (selector !== win && isNode(root) && isAncestor(selector, root)) ? [selector] : []
     }
     if (selector && arrayLike(selector)) return flatten(selector)
-    if (m = selector.match(easy)) {
-      if (m[1]) return (el = byId(root, m[1])) ? [el] : []
-      if (m[2]) return arrayify(root[byTag](m[2]))
-      if (hasByClass && m[3]) return arrayify(root[byClass](m[3]))
-    }
 
-    return select(selector, root)
+
+    if (doc.getElementsByClassName && selector == 'string' && (m = selector.match(classOnly))) {
+      return toArray((root).getElementsByClassName(m[1]))
+    }
+    // using duck typing for 'a' window or 'a' document (not 'the' window || document)
+    if (selector && (selector.document || (selector.nodeType && selector.nodeType == 9))) {
+      return !opt_root ? [selector] : []
+    }
+    return toArray((root).querySelectorAll(selector))
   }
 
-  // where the root is not document and a relationship selector is first we have to
-  // do some awkward adjustments to get it to work, even with qSA
-  function collectSelector(root, collector) {
-    return function (s) {
-      var oid, nid
-      if (splittable.test(s)) {
-        if (root[nodeType] !== 9) {
-          // make sure the el has an id, rewrite the query, set root to doc and run it
-          if (!(nid = oid = root.getAttribute('id'))) root.setAttribute('id', nid = '__qwerymeupscotty')
-          s = '[id="' + nid + '"]' + s // avoid byId and allow us to match context element
-          collector(root.parentNode || root, s, true)
-          oid || root.removeAttribute('id')
-        }
-        return;
-      }
-      s.length && collector(root, s, false)
-    }
-  }
-
-  var isAncestor = 'compareDocumentPosition' in html ?
-    function (element, container) {
-      return (container.compareDocumentPosition(element) & 16) == 16
-    } : 'contains' in html ?
-    function (element, container) {
-      container = container[nodeType] === 9 || container == window ? html : container
-      return container !== element && container.contains(element)
-    } :
-    function (element, container) {
-      while (element = element.parentNode) if (element === container) return 1
-      return 0
-    }
-  , getAttr = function () {
-      // detect buggy IE src/href getAttribute() call
-      var e = doc.createElement('p')
-      return ((e.innerHTML = '<a href="#x">x</a>') && e.firstChild.getAttribute('href') != '#x') ?
-        function (e, a) {
-          return a === 'class' ? e.className : (a === 'href' || a === 'src') ?
-            e.getAttribute(a, 2) : e.getAttribute(a)
-        } :
-        function (e, a) { return e.getAttribute(a) }
-    }()
-  , hasByClass = !!doc[byClass]
-    // has native qSA support
-  , hasQSA = doc.querySelector && doc[qSA]
-    // use native qSA
-  , selectQSA = function (selector, root) {
-      var result = [], ss, e
-      try {
-        if (root[nodeType] === 9 || !splittable.test(selector)) {
-          // most work is done right here, defer to qSA
-          return arrayify(root[qSA](selector))
-        }
-        // special case where we need the services of `collectSelector()`
-        each(ss = selector.split(','), collectSelector(root, function (ctx, s) {
-          e = ctx[qSA](s)
-          if (e.length == 1) result[result.length] = e.item(0)
-          else if (e.length) result = result.concat(arrayify(e))
-        }))
-        return ss.length > 1 && result.length > 1 ? uniq(result) : result
-      } catch (ex) { }
-      return selectNonNative(selector, root)
-    }
-    // no native selector support
-  , selectNonNative = function (selector, root) {
-      var result = [], items, m, i, l, r, ss
-      selector = selector.replace(normalizr, '$1')
-      if (m = selector.match(tagAndOrClass)) {
-        r = classRegex(m[2])
-        items = root[byTag](m[1] || '*')
-        for (i = 0, l = items.length; i < l; i++) {
-          if (r.test(items[i].className)) result[result.length] = items[i]
-        }
-        return result
-      }
-      // more complex selector, get `_qwery()` to do the work for us
-      each(ss = selector.split(','), collectSelector(root, function (ctx, s, rewrite) {
-        r = _qwery(s, ctx)
-        for (i = 0, l = r.length; i < l; i++) {
-          if (ctx[nodeType] === 9 || rewrite || isAncestor(r[i], root)) result[result.length] = r[i]
-        }
-      }))
-      return ss.length > 1 && result.length > 1 ? uniq(result) : result
-    }
-  , configure = function (options) {
-      // configNativeQSA: use fully-internal selector or native qSA where present
-      if (typeof options[useNativeQSA] !== 'undefined')
-        select = !options[useNativeQSA] ? selectNonNative : hasQSA ? selectQSA : selectNonNative
-    }
-
-  configure({ useNativeQSA: true })
-
-  qwery.configure = configure
   qwery.uniq = uniq
-  qwery.is = is
-  qwery.pseudos = {}
 
   return qwery
-});
+}, this);
 
 },{}],15:[function(require,module,exports){
 /*!
   * Reqwest! A general purpose XHR connection manager
-  * (c) Dustin Diaz 2013
+  * license MIT (c) Dustin Diaz 2014
   * https://github.com/ded/reqwest
-  * license MIT
   */
+
 !function (name, context, definition) {
   if (typeof module != 'undefined' && module.exports) module.exports = definition()
   else if (typeof define == 'function' && define.amd) define(definition)
@@ -3076,7 +2825,9 @@ module.exports = validName
 
   var win = window
     , doc = document
-    , twoHundo = /^20\d$/
+    , httpsRe = /^http/
+    , protocolRe = /(^\w+):\/\//
+    , twoHundo = /^(20\d|1223)$/ //http://stackoverflow.com/questions/10046972/msie-returns-status-code-of-1223-for-ajax-request
     , byTag = 'getElementsByTagName'
     , readyState = 'readyState'
     , contentType = 'Content-Type'
@@ -3086,6 +2837,7 @@ module.exports = validName
     , callbackPrefix = 'reqwest_' + (+new Date())
     , lastValue // data stored by the most recent JSONP callback
     , xmlHttpRequest = 'XMLHttpRequest'
+    , xDomainRequest = 'XDomainRequest'
     , noop = function () {}
 
     , isArray = typeof Array.isArray == 'function'
@@ -3095,40 +2847,56 @@ module.exports = validName
           }
 
     , defaultHeaders = {
-          contentType: 'application/x-www-form-urlencoded'
-        , requestedWith: xmlHttpRequest
-        , accept: {
+          'contentType': 'application/x-www-form-urlencoded'
+        , 'requestedWith': xmlHttpRequest
+        , 'accept': {
               '*':  'text/javascript, text/html, application/xml, text/xml, */*'
-            , xml:  'application/xml, text/xml'
-            , html: 'text/html'
-            , text: 'text/plain'
-            , json: 'application/json, text/javascript'
-            , js:   'application/javascript, text/javascript'
+            , 'xml':  'application/xml, text/xml'
+            , 'html': 'text/html'
+            , 'text': 'text/plain'
+            , 'json': 'application/json, text/javascript'
+            , 'js':   'application/javascript, text/javascript'
           }
       }
 
-    , xhr = win[xmlHttpRequest]
-        ? function () {
-            return new XMLHttpRequest()
+    , xhr = function(o) {
+        // is it x-domain
+        if (o['crossOrigin'] === true) {
+          var xhr = win[xmlHttpRequest] ? new XMLHttpRequest() : null
+          if (xhr && 'withCredentials' in xhr) {
+            return xhr
+          } else if (win[xDomainRequest]) {
+            return new XDomainRequest()
+          } else {
+            throw new Error('Browser does not support cross-origin requests')
           }
-        : function () {
-            return new ActiveXObject('Microsoft.XMLHTTP')
-          }
+        } else if (win[xmlHttpRequest]) {
+          return new XMLHttpRequest()
+        } else {
+          return new ActiveXObject('Microsoft.XMLHTTP')
+        }
+      }
     , globalSetupOptions = {
         dataFilter: function (data) {
           return data
         }
       }
 
+  function succeed(r) {
+    var protocol = protocolRe.exec(r.url);
+    protocol = (protocol && protocol[1]) || window.location.protocol;
+    return httpsRe.test(protocol) ? twoHundo.test(r.request.status) : !!r.request.response;
+  }
+
   function handleReadyState(r, success, error) {
     return function () {
       // use _aborted to mitigate against IE err c00c023f
       // (can't read props on aborted request objects)
       if (r._aborted) return error(r.request)
+      if (r._timedOut) return error(r.request, 'Request is aborted: timeout')
       if (r.request && r.request[readyState] == 4) {
         r.request.onreadystatechange = noop
-        if (twoHundo.test(r.request.status))
-          success(r.request)
+        if (succeed(r)) success(r.request)
         else
           error(r.request)
       }
@@ -3136,23 +2904,24 @@ module.exports = validName
   }
 
   function setHeaders(http, o) {
-    var headers = o.headers || {}
+    var headers = o['headers'] || {}
       , h
 
-    headers.Accept = headers.Accept
-      || defaultHeaders.accept[o.type]
-      || defaultHeaders.accept['*']
+    headers['Accept'] = headers['Accept']
+      || defaultHeaders['accept'][o['type']]
+      || defaultHeaders['accept']['*']
 
+    var isAFormData = typeof FormData === 'function' && (o['data'] instanceof FormData);
     // breaks cross-origin requests with legacy browsers
-    if (!o.crossOrigin && !headers[requestedWith]) headers[requestedWith] = defaultHeaders.requestedWith
-    if (!headers[contentType]) headers[contentType] = o.contentType || defaultHeaders.contentType
+    if (!o['crossOrigin'] && !headers[requestedWith]) headers[requestedWith] = defaultHeaders['requestedWith']
+    if (!headers[contentType] && !isAFormData) headers[contentType] = o['contentType'] || defaultHeaders['contentType']
     for (h in headers)
-      headers.hasOwnProperty(h) && http.setRequestHeader(h, headers[h])
+      headers.hasOwnProperty(h) && 'setRequestHeader' in http && http.setRequestHeader(h, headers[h])
   }
 
   function setCredentials(http, o) {
-    if (typeof o.withCredentials !== 'undefined' && typeof http.withCredentials !== 'undefined') {
-      http.withCredentials = !!o.withCredentials
+    if (typeof o['withCredentials'] !== 'undefined' && typeof http.withCredentials !== 'undefined') {
+      http.withCredentials = !!o['withCredentials']
     }
   }
 
@@ -3166,9 +2935,8 @@ module.exports = validName
 
   function handleJsonp(o, fn, err, url) {
     var reqId = uniqid++
-      , cbkey = o.jsonpCallback || 'callback' // the 'callback' key
-      , cbval = o.jsonpCallbackName || reqwest.getcallbackPrefix(reqId)
-      // , cbval = o.jsonpCallbackName || ('reqwest_' + reqId) // the 'callback' value
+      , cbkey = o['jsonpCallback'] || 'callback' // the 'callback' key
+      , cbval = o['jsonpCallbackName'] || reqwest.getcallbackPrefix(reqId)
       , cbreg = new RegExp('((^|\\?|&)' + cbkey + ')=([^&]+)')
       , match = url.match(cbreg)
       , script = doc.createElement('script')
@@ -3194,9 +2962,6 @@ module.exports = validName
       // need this for IE due to out-of-order onreadystatechange(), binding script
       // execution to an event listener gives us control over when the script
       // is executed. See http://jaubourg.net/2010/07/loading-script-as-onclick-handler-of.html
-      //
-      // if this hack is used in IE10 jsonp callback are never called
-      script.event = 'onclick'
       script.htmlFor = script.id = '_reqwest_' + reqId
     }
 
@@ -3230,30 +2995,49 @@ module.exports = validName
 
   function getRequest(fn, err) {
     var o = this.o
-      , method = (o.method || 'GET').toUpperCase()
-      , url = typeof o === 'string' ? o : o.url
-      // convert non-string objects to query-string form unless o.processData is false
-      , data = (o.processData !== false && o.data && typeof o.data !== 'string')
-        ? reqwest.toQueryString(o.data)
-        : (o.data || null)
+      , method = (o['method'] || 'GET').toUpperCase()
+      , url = typeof o === 'string' ? o : o['url']
+      // convert non-string objects to query-string form unless o['processData'] is false
+      , data = (o['processData'] !== false && o['data'] && typeof o['data'] !== 'string')
+        ? reqwest.toQueryString(o['data'])
+        : (o['data'] || null)
       , http
+      , sendWait = false
 
     // if we're working on a GET request and we have data then we should append
     // query string to end of URL and not post data
-    if ((o.type == 'jsonp' || method == 'GET') && data) {
+    if ((o['type'] == 'jsonp' || method == 'GET') && data) {
       url = urlappend(url, data)
       data = null
     }
 
-    if (o.type == 'jsonp') return handleJsonp(o, fn, err, url)
+    if (o['type'] == 'jsonp') return handleJsonp(o, fn, err, url)
 
-    http = xhr()
-    http.open(method, url, o.async === false ? false : true)
+    // get the xhr from the factory if passed
+    // if the factory returns null, fall-back to ours
+    http = (o.xhr && o.xhr(o)) || xhr(o)
+
+    http.open(method, url, o['async'] === false ? false : true)
     setHeaders(http, o)
     setCredentials(http, o)
-    http.onreadystatechange = handleReadyState(this, fn, err)
-    o.before && o.before(http)
-    http.send(data)
+    if (win[xDomainRequest] && http instanceof win[xDomainRequest]) {
+        http.onload = fn
+        http.onerror = err
+        // NOTE: see
+        // http://social.msdn.microsoft.com/Forums/en-US/iewebdevelopment/thread/30ef3add-767c-4436-b8a9-f1ca19b4812e
+        http.onprogress = function() {}
+        sendWait = true
+    } else {
+      http.onreadystatechange = handleReadyState(this, fn, err)
+    }
+    o['before'] && o['before'](http)
+    if (sendWait) {
+      setTimeout(function () {
+        http.send(data)
+      }, 200)
+    } else {
+      http.send(data)
+    }
     return http
   }
 
@@ -3264,20 +3048,24 @@ module.exports = validName
     init.apply(this, arguments)
   }
 
-  function setType(url) {
-    var m = url.match(/\.(json|jsonp|html|xml)(\?|$)/)
-    return m ? m[1] : 'js'
+  function setType(header) {
+    // json, javascript, text/plain, text/html, xml
+    if (header.match('json')) return 'json'
+    if (header.match('javascript')) return 'js'
+    if (header.match('text')) return 'html'
+    if (header.match('xml')) return 'xml'
   }
 
   function init(o, fn) {
 
-    this.url = typeof o == 'string' ? o : o.url
+    this.url = typeof o == 'string' ? o : o['url']
     this.timeout = null
 
     // whether request has been fulfilled for purpose
     // of tracking the Promises
     this._fulfilled = false
     // success handlers
+    this._successHandler = function(){}
     this._fulfillmentHandlers = []
     // error handlers
     this._errorHandlers = []
@@ -3287,36 +3075,35 @@ module.exports = validName
     this._responseArgs = {}
 
     var self = this
-      , type = o.type || setType(this.url)
 
     fn = fn || function () {}
 
-    if (o.timeout) {
+    if (o['timeout']) {
       this.timeout = setTimeout(function () {
-        self.abort()
-      }, o.timeout)
+        timedOut()
+      }, o['timeout'])
     }
 
-    if (o.success) {
-      this._fulfillmentHandlers.push(function () {
-        o.success.apply(o, arguments)
-      })
+    if (o['success']) {
+      this._successHandler = function () {
+        o['success'].apply(o, arguments)
+      }
     }
 
-    if (o.error) {
+    if (o['error']) {
       this._errorHandlers.push(function () {
-        o.error.apply(o, arguments)
+        o['error'].apply(o, arguments)
       })
     }
 
-    if (o.complete) {
+    if (o['complete']) {
       this._completeHandlers.push(function () {
-        o.complete.apply(o, arguments)
+        o['complete'].apply(o, arguments)
       })
     }
 
     function complete (resp) {
-      o.timeout && clearTimeout(self.timeout)
+      o['timeout'] && clearTimeout(self.timeout)
       self.timeout = null
       while (self._completeHandlers.length > 0) {
         self._completeHandlers.shift()(resp)
@@ -3324,9 +3111,16 @@ module.exports = validName
     }
 
     function success (resp) {
+      var type = o['type'] || resp && setType(resp.getResponseHeader('Content-Type')) // resp can be undefined in IE
+      resp = (type !== 'jsonp') ? self.request : resp
       // use global data filter on response text
       var filteredResponse = globalSetupOptions.dataFilter(resp.responseText, type)
-        , r = resp.responseText = filteredResponse
+        , r = filteredResponse
+      try {
+        resp.responseText = r
+      } catch (e) {
+        // can't assign this in IE<=8, just ignore
+      }
       if (r) {
         switch (type) {
         case 'json':
@@ -3356,14 +3150,21 @@ module.exports = validName
       self._responseArgs.resp = resp
       self._fulfilled = true
       fn(resp)
+      self._successHandler(resp)
       while (self._fulfillmentHandlers.length > 0) {
-        self._fulfillmentHandlers.shift()(resp)
+        resp = self._fulfillmentHandlers.shift()(resp)
       }
 
       complete(resp)
     }
 
+    function timedOut() {
+      self._timedOut = true
+      self.request.abort()      
+    }
+
     function error(resp, msg, t) {
+      resp = self.request
       self._responseArgs.resp = resp
       self._responseArgs.msg = msg
       self._responseArgs.t = t
@@ -3399,7 +3200,7 @@ module.exports = validName
       success = success || function () {}
       fail = fail || function () {}
       if (this._fulfilled) {
-        success(this._responseArgs.resp)
+        this._responseArgs.resp = success(this._responseArgs.resp)
       } else if (this._erred) {
         fail(this._responseArgs.resp, this._responseArgs.msg, this._responseArgs.t)
       } else {
@@ -3432,6 +3233,9 @@ module.exports = validName
       }
       return this
     }
+  , 'catch': function (fn) {
+      return this.fail(fn)
+    }
   }
 
   function reqwest(o, fn) {
@@ -3449,8 +3253,8 @@ module.exports = validName
       , optCb = function (o) {
           // IE gives value="" even where there is no value attribute
           // 'specified' ref: http://www.w3.org/TR/DOM-Level-3-Core/core.html#ID-862529273
-          if (o && !o.disabled)
-            cb(n, normalize(o.attributes.value && o.attributes.value.specified ? o.value : o.text))
+          if (o && !o['disabled'])
+            cb(n, normalize(o['attributes']['value'] && o['attributes']['value']['specified'] ? o['value'] : o['text']))
         }
       , ch, ra, val, i
 
@@ -3557,12 +3361,12 @@ module.exports = validName
         }
     // If an array was passed in, assume that it is an array of form elements.
     if (isArray(o)) {
-      for (i = 0; o && i < o.length; i++) add(o[i].name, o[i].value)
+      for (i = 0; o && i < o.length; i++) add(o[i]['name'], o[i]['value'])
     } else {
       // If traditional, encode the "old" way (the way 1.3.2 or older
       // did it), otherwise encode params recursively.
       for (prefix in o) {
-        buildParams(prefix, o[prefix], traditional, add)
+        if (o.hasOwnProperty(prefix)) buildParams(prefix, o[prefix], traditional, add)
       }
     }
 
@@ -3605,10 +3409,10 @@ module.exports = validName
   // .ajax.compat(options, callback)
   reqwest.compat = function (o, fn) {
     if (o) {
-      o.type && (o.method = o.type) && delete o.type
-      o.dataType && (o.type = o.dataType)
-      o.jsonpCallback && (o.jsonpCallbackName = o.jsonpCallback) && delete o.jsonpCallback
-      o.jsonp && (o.jsonpCallback = o.jsonp)
+      o['type'] && (o['method'] = o['type']) && delete o['type']
+      o['dataType'] && (o['type'] = o['dataType'])
+      o['jsonpCallback'] && (o['jsonpCallbackName'] = o['jsonpCallback']) && delete o['jsonpCallback']
+      o['jsonp'] && (o['jsonpCallback'] = o['jsonp'])
     }
     return new Reqwest(o, fn)
   }
@@ -4146,4 +3950,4 @@ module.exports = validName
  
   return traversty
 });
-},{}]},{},[2])
+},{}]},{},[2]);
