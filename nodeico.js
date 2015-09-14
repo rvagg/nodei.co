@@ -1,3 +1,5 @@
+'use strict'
+
 const path        = require('path')
     , fs          = require('fs')
     , http        = require('http')
@@ -32,7 +34,7 @@ bole.output({
 })
 
 if (process.env.LOG_FILE) {
-  console.log('Starting logging to %s', process.env.LOG_FILE)
+  console.log(`Starting logging to ${process.env.LOG_FILE}`)
   bole.output({
     level  : 'debug',
     stream : fs.createWriteStream(process.env.LOG_FILE)
@@ -48,7 +50,7 @@ swig.setDefaults({
 swig.setFilter('humanize', humanize)
 
 
-var mount = st({
+const mount = st({
     path  : path.join(__dirname, './public')
   , url   : '/'
   , index : false
@@ -56,13 +58,13 @@ var mount = st({
 })
 
 
-var router = Router({
-    errorHandler: function (req, res, err) {
+const router = Router({
+    errorHandler: (req, res, err) => {
       req.log.error(err)
       sendError(req, res, err)
     }
 
-  , notFound: function (req, res) {
+  , notFound: (req, res) => {
       if (mount(req, res))
         return
 
@@ -74,7 +76,7 @@ var router = Router({
 })
 
 
-routes.forEach(function (route) {
+routes.forEach((route) => {
   if (!Array.isArray(route.path))
     return router.addRoute(route.path, route)
 
@@ -101,22 +103,22 @@ function handler (req, res) {
 
 module.exports = function () {
   return http.createServer(handler)
-    .on('error', function (err) {
+    .on('error', (err) => {
       log.error(err)
       throw err
     })
 }
 
 if (require.main === module) {
-  module.exports().listen(port, function (err) {
+  module.exports().listen(port, (err) => {
     if (err) {
       log.error(err)
       throw err
     }
 
-    log.info('Server started on port %d', port)
+    log.info(`Server started on port ${port}`)
     console.log()
-    console.log('>> Running: http://localhost:' + port)
+    console.log(`>> Running: http://localhost:${port}`)
     console.log()
   })
 }
