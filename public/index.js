@@ -208,6 +208,8 @@ $.domReady(function () {
 })
 
 },{"../lib/valid-name":3,"./ender":1,"delayed":8}],3:[function(require,module,exports){
+'use strict' // cannot be ES6, used in the browser
+
 // from normalize-package-data/lib/fixer.js
 function isValidScopedPackageName(spec) {
   if (spec.charAt(0) !== '@') return false
@@ -238,8 +240,10 @@ function ensureValidName (name, strict, allowLegacyCase) {
 
 module.exports = function (name) { return ensureValidName(name, false, true) }
 
-module.exports.pkgregex = '(:?@[A-Za-z0-9]+/)?[^/@\\s\\+%:]+'
-module.exports.pkgregex = '[^/@\\s\\+%:]+'
+// precise: module.exports.pkgregex = '(:?@[A-Za-z0-9]+/)?[^/@\\s\\+%:]+'
+// router happy:
+module.exports.pkgregex = '@?\\w*/?[^/@\\s\\+%:]+'
+// minimal: module.exports.pkgregex = '[^/@\\s\\+%:]+'
 
 },{}],4:[function(require,module,exports){
 /*!
@@ -2288,66 +2292,73 @@ module.exports.pkgregex = '[^/@\\s\\+%:]+'
 },{"bonzo":6}],8:[function(require,module,exports){
 /*****************************************************************
   * Delayed: A collection of setTimeout-related function wranglers
-  * Copyright (c) Rod Vagg (@rvagg) 2012
+  * Copyright (c) Rod Vagg (@rvagg) 2014
   * https://github.com/rvagg/delayed
   * License: MIT
   */
 
-!(function (name, definition) {
+!(function init (name, definition) {
   if (typeof module != 'undefined' && module.exports) module.exports = definition()
   else if (typeof define === 'function' && define.amd) define(name, definition)
   else this[name] = definition()
-}('delayed', function () {
+}('delayed', function setup () {
 
-  var context      = this
-    , old          = context.delayed
-    , deferSeconds = 0.001
+  var context = this
+    , old     = context.delayed
+    , deferMs = 1
 
-    , slice = function (arr, i) {
-        return Array.prototype.slice.call(arr, i)
-      }
 
-    , delay = function (fn, seconds, ctx) {
-        var args = slice(arguments, 3)
-        return setTimeout(function() {
-          fn.apply(ctx || null, args)
-        }, seconds * 1000)
-      }
+  function slice (arr, i) {
+    return Array.prototype.slice.call(arr, i)
+  }
 
-    , defer = function (fn, ctx) {
-        return delay.apply(null, [ fn, deferSeconds, ctx ].concat(slice(arguments, 2)))
-      }
 
-    , delayed = function () {
-        var args = slice(arguments)
-        return function () {
-          return delay.apply(null, args.concat(slice(arguments)))
-        }
-      }
+  function delay (fn, ms, ctx) {
+    var args = slice(arguments, 3)
+    return setTimeout(function delayer () {
+      fn.apply(ctx || null, args)
+    }, ms)
+  }
 
-    , deferred = function (fn, ctx) {
-        return delayed.apply(null, [ fn, deferSeconds, ctx ].concat(slice(arguments, 2)))
-      }
 
-    , cumulativeDelayed = function (fn, seconds, ctx) {
-        var args = slice(arguments, 3)
-          , timeout = null
+  function defer (fn, ctx) {
+    return delay.apply(null, [ fn, deferMs, ctx ].concat(slice(arguments, 2)))
+  }
 
-        return function() {
-          var _args = slice(arguments)
-            , f = function() {
-                return fn.apply(ctx || null, args.concat(_args))
-              }
-          if (timeout != null)
-            clearTimeout(timeout)
-          return timeout = setTimeout(f, seconds * 1000)
-        }
-      }
 
-    , noConflict = function () {
-        context.delayed = old
-        return this
-      }
+  function delayed () {
+    var args = slice(arguments)
+    return function delayeder () {
+      return delay.apply(null, args.concat(slice(arguments)))
+    }
+  }
+
+
+  function deferred (fn, ctx) {
+    return delayed.apply(null, [ fn, deferMs, ctx ].concat(slice(arguments, 2)))
+  }
+
+
+  function cumulativeDelayed (fn, ms, ctx) {
+    var args = slice(arguments, 3)
+      , timeout = null
+
+    return function cumulativeDelayeder () {
+      var _args = slice(arguments)
+        , f = function cumulativeDelayedCaller () {
+            return fn.apply(ctx || null, args.concat(_args))
+          }
+      if (timeout != null)
+        clearTimeout(timeout)
+      return timeout = setTimeout(f, ms)
+    }
+  }
+
+
+  function noConflict () {
+    context.delayed = old
+    return this
+  }
 
 
   return {
@@ -2357,9 +2368,11 @@ module.exports.pkgregex = '[^/@\\s\\+%:]+'
     , deferred          : deferred
     , noConflict        : noConflict
     , cumulativeDelayed : cumulativeDelayed
+    , debounce          : cumulativeDelayed
   }
 
 }));
+
 },{}],9:[function(require,module,exports){
 /*!
   * domready (c) Dustin Diaz 2014 - License MIT
@@ -2813,7 +2826,7 @@ module.exports.pkgregex = '[^/@\\s\\+%:]+'
 },{}],15:[function(require,module,exports){
 /*!
   * Reqwest! A general purpose XHR connection manager
-  * license MIT (c) Dustin Diaz 2014
+  * license MIT (c) Dustin Diaz 2015
   * https://github.com/ded/reqwest
   */
 
@@ -2823,16 +2836,30 @@ module.exports.pkgregex = '[^/@\\s\\+%:]+'
   else context[name] = definition()
 }('reqwest', this, function () {
 
-  var win = window
-    , doc = document
-    , httpsRe = /^http/
+  var context = this
+
+  if ('window' in context) {
+    var doc = document
+      , byTag = 'getElementsByTagName'
+      , head = doc[byTag]('head')[0]
+  } else {
+    var XHR2
+    try {
+      // prevent browserify including xhr2
+      var xhr2 = 'xhr2'
+      XHR2 = require(xhr2)
+    } catch (ex) {
+      throw new Error('Peer dependency `xhr2` required! Please npm install xhr2')
+    }
+  }
+
+
+  var httpsRe = /^http/
     , protocolRe = /(^\w+):\/\//
     , twoHundo = /^(20\d|1223)$/ //http://stackoverflow.com/questions/10046972/msie-returns-status-code-of-1223-for-ajax-request
-    , byTag = 'getElementsByTagName'
     , readyState = 'readyState'
     , contentType = 'Content-Type'
     , requestedWith = 'X-Requested-With'
-    , head = doc[byTag]('head')[0]
     , uniqid = 0
     , callbackPrefix = 'reqwest_' + (+new Date())
     , lastValue // data stored by the most recent JSONP callback
@@ -2862,16 +2889,18 @@ module.exports.pkgregex = '[^/@\\s\\+%:]+'
     , xhr = function(o) {
         // is it x-domain
         if (o['crossOrigin'] === true) {
-          var xhr = win[xmlHttpRequest] ? new XMLHttpRequest() : null
+          var xhr = context[xmlHttpRequest] ? new XMLHttpRequest() : null
           if (xhr && 'withCredentials' in xhr) {
             return xhr
-          } else if (win[xDomainRequest]) {
+          } else if (context[xDomainRequest]) {
             return new XDomainRequest()
           } else {
             throw new Error('Browser does not support cross-origin requests')
           }
-        } else if (win[xmlHttpRequest]) {
+        } else if (context[xmlHttpRequest]) {
           return new XMLHttpRequest()
+        } else if (XHR2) {
+          return new XHR2()
         } else {
           return new ActiveXObject('Microsoft.XMLHTTP')
         }
@@ -2883,9 +2912,9 @@ module.exports.pkgregex = '[^/@\\s\\+%:]+'
       }
 
   function succeed(r) {
-    var protocol = protocolRe.exec(r.url);
-    protocol = (protocol && protocol[1]) || window.location.protocol;
-    return httpsRe.test(protocol) ? twoHundo.test(r.request.status) : !!r.request.response;
+    var protocol = protocolRe.exec(r.url)
+    protocol = (protocol && protocol[1]) || context.location.protocol
+    return httpsRe.test(protocol) ? twoHundo.test(r.request.status) : !!r.request.response
   }
 
   function handleReadyState(r, success, error) {
@@ -2953,7 +2982,7 @@ module.exports.pkgregex = '[^/@\\s\\+%:]+'
       url = urlappend(url, cbkey + '=' + cbval) // no callback details, add 'em
     }
 
-    win[cbval] = generalCallback
+    context[cbval] = generalCallback
 
     script.type = 'text/javascript'
     script.src = url
@@ -3020,7 +3049,7 @@ module.exports.pkgregex = '[^/@\\s\\+%:]+'
     http.open(method, url, o['async'] === false ? false : true)
     setHeaders(http, o)
     setCredentials(http, o)
-    if (win[xDomainRequest] && http instanceof win[xDomainRequest]) {
+    if (context[xDomainRequest] && http instanceof context[xDomainRequest]) {
         http.onload = fn
         http.onerror = err
         // NOTE: see
@@ -3050,6 +3079,7 @@ module.exports.pkgregex = '[^/@\\s\\+%:]+'
 
   function setType(header) {
     // json, javascript, text/plain, text/html, xml
+    if (header === null) return undefined; //In case of no content-type.
     if (header.match('json')) return 'json'
     if (header.match('javascript')) return 'js'
     if (header.match('text')) return 'html'
@@ -3125,7 +3155,7 @@ module.exports.pkgregex = '[^/@\\s\\+%:]+'
         switch (type) {
         case 'json':
           try {
-            resp = win.JSON ? win.JSON.parse(r) : eval('(' + r + ')')
+            resp = context.JSON ? context.JSON.parse(r) : eval('(' + r + ')')
           } catch (err) {
             return error(resp, 'Could not parse JSON in response', err)
           }
@@ -3160,7 +3190,7 @@ module.exports.pkgregex = '[^/@\\s\\+%:]+'
 
     function timedOut() {
       self._timedOut = true
-      self.request.abort()      
+      self.request.abort()
     }
 
     function error(resp, msg, t) {

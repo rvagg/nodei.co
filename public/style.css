@@ -35,7 +35,10 @@ h2 {
 .header {
   padding-bottom: 0.5em;
   border-bottom: 1px solid rgb(230, 230, 230);
-  font-family: "iwan-reschniev";
+}
+
+h1 {
+  font-family: "iwan-reschniev" !important;
 }
 .content {
   margin: 2em auto;
@@ -97,4 +100,19 @@ code, .copyable {
 }
 #makemeone .package-not-found span {
   font-style: italic;
+}
+#nodesource {
+  position: absolute;
+  text-align: center;
+  width: 123px;
+  margin-right: -11px;
+  top: 10px;
+  right: 40px;
+}
+#nodesource img {
+  width: 134px;
+  height: 78px;
+}
+#nodesource p {
+  font-size: 11px;
 }
