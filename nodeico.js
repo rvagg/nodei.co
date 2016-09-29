@@ -41,6 +41,8 @@ if (process.env.LOG_FILE) {
   })
 }
 
+if (process.env.NODE_TITLE)
+  process.title = process.env.NODE_TITLE
 
 swig.setDefaults({
     root  : path.join(__dirname, 'views')
@@ -61,7 +63,7 @@ const mount = st({
 const router = Router({
     errorHandler: (req, res, err) => {
       req.log.error(err)
-      sendError(req, res, err)
+      sendError(req, res, { body: err })
     }
 
   , notFound: (req, res) => {

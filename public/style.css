@@ -116,3 +116,8 @@ code, .copyable {
 #nodesource p {
   font-size: 11px;
 }
+
+
+.pure-g {
+    display: inherit;
+}
