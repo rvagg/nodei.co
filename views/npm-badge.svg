@@ -42,6 +42,7 @@
       {% endif %}
     </text>
 
+    <!--
     <text x="{{ params.margin + 106 }}" y="{{ params.margin + 42 }}">
       {{ pkginfo.depended | default(0) | humanize }}
       {% if pkginfo.depended == 1 %}
@@ -50,6 +51,7 @@
         dependents
       {% endif %}
     </text>
+    -->
 
     <text x="{{ params.margin + 236 }}" y="{{ params.margin + 30 }}">
       {{ params.versionText }}
