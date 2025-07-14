@@ -2,45 +2,25 @@
   "name": "nodei.co",
   "version": "0.0.0",
   "description": "https://nodei.co - Node.js badges, that's all",
-  "main": "nodeico.js",
+  "type": "module",
+  "main": "nodeico-fastify.js",
   "author": "Rod Vagg <r@va.gg> (https://github.com/rvagg)",
   "dependencies": {
-    "after": "~0.8.1",
-    "bean": "~1.0.15",
-    "bl": "~1.0.0",
-    "bole": "~2.0.0",
-    "bonzo": "~2.0.0",
-    "browserify": "~11.1.0",
-    "canvas": "rvagg/node-canvas#nan2-nopango",
-    "delayed": "~1.0.1",
-    "domready": "~1.0.8",
-    "ender-js": "~0.5.0",
-    "humanize-number": "0.0.2",
-    "jsonist": "~1.2.0",
-    "moment": "~2.10.6",
-    "node-uuid": "~1.4.3",
-    "once": "~1.3.2",
-    "path": "~0.12.7",
-    "qwery": "~4.0.0",
-    "qwery-mobile": "~1.0.14",
-    "reqwest": "~2.0.3",
-    "routes-router": "~4.2.0",
-    "send-data": "~7.0.0",
-    "st": "~0.5.5",
-    "swig": "~1.4.2",
-    "traversty": "~1.0.5",
-    "xtend": "~4.0.0"
-  },
-  "browser": {
-    "qwery-mobile": false
+    "@fastify/static": "^8.0.0",
+    "bole": "~5.0.19",
+    "fastify": "^5.0.0",
+    "lru-cache": "^11.1.0"
   },
   "scripts": {
-    "install": "browserify browser-lib/index.js -o public/index.js",
-    "test": "tape test/*-test.js"
+    "start": "node nodeico.js",
+    "dev": "nodemon nodeico.js",
+    "test": "npm run lint && node --test test/*-test.js",
+    "lint": "standard",
+    "lint:fix": "standard --fix"
   },
   "private": true,
   "devDependencies": {
-    "servertest": "~1.0.2",
-    "tape": "~2.14.0"
+    "nodemon": "^3.1.10",
+    "standard": "^17.1.2"
   }
 }

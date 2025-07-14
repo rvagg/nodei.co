@@ -1,0 +1,40 @@
+# Logrotate configuration for nodei.co
+# Place this file in /etc/logrotate.d/nodeico
+
+/var/log/nodeico/*.log {
+    # Rotate daily
+    daily
+    
+    # Keep 14 days of logs
+    rotate 14
+    
+    # Compress rotated logs
+    compress
+    delaycompress
+    
+    # Don't rotate if empty
+    notifempty
+    
+    # Create new log files with proper permissions
+    create 0640 nodeico nodeico
+    
+    # Use date as extension for rotated files
+    dateext
+    dateformat -%Y%m%d
+    
+    # Missing log files are ok
+    missingok
+    
+    # Size threshold - rotate if larger than 100M
+    size 100M
+    
+    # Shared scripts for all logs matching the pattern
+    sharedscripts
+    
+    # Signal the application after rotation
+    postrotate
+        # Send SIGUSR2 to reload log handles (if supported)
+        # Otherwise restart the service
+        /bin/systemctl reload nodeico >/dev/null 2>&1 || /bin/systemctl restart nodeico >/dev/null 2>&1 || true
+    endscript
+}

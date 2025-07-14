@@ -1,0 +1,46 @@
+[Unit]
+Description=nodei.co web service
+After=network.target
+
+[Service]
+Type=simple
+User=nodeico
+Group=nodeico
+
+# Working directory
+WorkingDirectory=/var/www/nodeico/
+
+# Environment variables
+Environment="NODE_ENV=production"
+Environment="PORT=9000"
+Environment="LOG_FILE=/var/log/nodeico/app.log"
+
+# Optional: Load additional environment variables from file
+EnvironmentFile=-/etc/default/nodeico
+
+# Start command - using system Node.js or specific version as needed
+ExecStart=/usr/bin/node nodeico.js
+
+# Restart policy
+Restart=always
+RestartSec=10
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/log/nodeico
+
+# Resource limits (optional)
+LimitNOFILE=65536
+# Note: Use MemoryLimit=512M for systemd versions < 231
+MemoryMax=512M
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=nodeico
+
+[Install]
+WantedBy=multi-user.target
