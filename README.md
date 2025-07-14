@@ -1,14 +1,17 @@
 # nodei.co
 
-NPM package badges for your README files.
+Beautiful badges for your Node.js packages. Generate live npm stats for your GitHub README with customizable SVG badges.
 
 **https://nodei.co**
 
-## About
-
-nodei.co provides simple, informative badges for npm packages that you can include in your project's README or documentation.
-
 ## Examples
+
+### Shields Style (GitHub README Compatible)
+[![NPM](https://nodei.co/npm/express.svg?style=shields&data=n,v,d)](https://nodei.co/npm/express/)
+
+```markdown
+[![NPM](https://nodei.co/npm/express.svg?style=shields&data=n,v,d)](https://nodei.co/npm/express/)
+```
 
 ### Standard Badge
 [![NPM](https://nodei.co/npm/fastify.svg)](https://nodei.co/npm/fastify/)
@@ -17,32 +20,18 @@ nodei.co provides simple, informative badges for npm packages that you can inclu
 [![NPM](https://nodei.co/npm/fastify.svg)](https://nodei.co/npm/fastify/)
 ```
 
-### Compact Badge
-[![NPM](https://nodei.co/npm/@ipld/schema.svg?compact=true)](https://nodei.co/npm/@ipld/schema/)
+### Flat Design
+[![NPM](https://nodei.co/npm/typescript.svg?style=flat&data=n,v)](https://nodei.co/npm/typescript/)
 
 ```markdown
-[![NPM](https://nodei.co/npm/@ipld/schema.svg?compact=true)](https://nodei.co/npm/@ipld/schema/)
+[![NPM](https://nodei.co/npm/typescript.svg?style=flat&data=n,v)](https://nodei.co/npm/typescript/)
 ```
 
-### Mini Badge
-[![NPM](https://nodei.co/npm/react.svg?mini=true)](https://nodei.co/npm/react/)
+### Scoped Packages
+[![NPM](https://nodei.co/npm/@babel/core.svg?style=shields&data=n,v,u)](https://nodei.co/npm/@babel/core/)
 
 ```markdown
-[![NPM](https://nodei.co/npm/react.svg?mini=true)](https://nodei.co/npm/react/)
-```
-
-### With Stars
-[![NPM](https://nodei.co/npm/vue.svg?stars=true)](https://nodei.co/npm/vue/)
-
-```markdown
-[![NPM](https://nodei.co/npm/vue.svg?stars=true)](https://nodei.co/npm/vue/)
-```
-
-### Scoped Package
-[![NPM](https://nodei.co/npm/@types/node.svg?compact=true)](https://nodei.co/npm/@types/node/)
-
-```markdown
-[![NPM](https://nodei.co/npm/@types/node.svg?compact=true)](https://nodei.co/npm/@types/node/)
+[![NPM](https://nodei.co/npm/@babel/core.svg?style=shields&data=n,v,u)](https://nodei.co/npm/@babel/core/)
 ```
 
 ## Usage
@@ -53,19 +42,52 @@ Replace `package-name` with your npm package name:
 [![NPM](https://nodei.co/npm/package-name.svg)](https://nodei.co/npm/package-name/)
 ```
 
-### Options
+### Badge Styles
 
-- `?compact=true` - Compact badge size
-- `?mini=true` - Minimal badge size
-- `?stars=true` - Include GitHub star count
+#### Modern Compact Badges
+- `?style=shields` - GitHub README compatible, supports multi-data
+- `?style=flat` - Modern design with rounded corners
+- `?style=flat-square` - Flat design with square corners
 
-### Scoped Packages
+#### Classic NodeICO Badges
+- `?style=standard` - Full package information (default)
+- `?style=compact` - Single-line condensed format
+- `?style=mini` - Minimal install command only
 
-Scoped packages like `@babel/core` are fully supported:
+### Data Options
+
+Add package information with the `data` parameter. **Order matters** - data appears in the order specified:
+
+- `name` or `n` - Package name
+- `version` or `v` - Latest version
+- `downloads` or `d` - Weekly downloads
+- `stars` or `s` - GitHub stars
+- `updated` or `u` - Last publish date
+
+#### Examples
 
 ```markdown
-[![NPM](https://nodei.co/npm/@babel/core.svg)](https://nodei.co/npm/@babel/core/)
+# Single data point
+[![NPM](https://nodei.co/npm/express.svg?style=shields&data=version)](https://nodei.co/npm/express/)
+
+# Multiple data points (order matters)
+[![NPM](https://nodei.co/npm/react.svg?style=flat&data=n,v,d)](https://nodei.co/npm/react/)
+
+# Reorder data as needed
+[![NPM](https://nodei.co/npm/vue.svg?style=shields&data=d,v,u)](https://nodei.co/npm/vue/)
+
+# Standard style with data
+[![NPM](https://nodei.co/npm/lodash.svg?data=s,d)](https://nodei.co/npm/lodash/)
 ```
+
+### URL Format
+
+```
+https://nodei.co/npm/<package-name>.svg?<parameters>
+```
+
+**Scoped packages**: Include the full scope: `/npm/@babel/core.svg`
+**Multiple data points**: Separate with commas: `data=n,v,d`
 
 ## Development
 
@@ -88,7 +110,7 @@ npm run lint
 
 ## Deployment
 
-See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for production deployment instructions using systemd.
+See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for production deployment instructions.
 
 ## License
 

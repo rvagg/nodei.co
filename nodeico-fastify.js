@@ -351,10 +351,28 @@ export default function createServer () {
     try {
       const packageInfo = await pkginfo(request.reqLog, pkg, options)
 
+      // For shields/flat styles, we need to handle dimensions differently
+      const styleName = options.style || 'standard'
+      let params
+
+      if (['shields', 'flat', 'flat-square'].includes(styleName)) {
+        // These styles calculate their own dimensions
+        const { getBadgeStyle } = await import('./lib/badge-styles/index.js')
+        const style = getBadgeStyle(styleName)
+        if (style.calculateDimensions) {
+          params = style.calculateDimensions(packageInfo, options)
+        } else {
+          params = {} // Minimal params for new styles
+        }
+      } else {
+        // Legacy styles use calculateParams
+        params = calculateParams(options, packageInfo)
+      }
+
       const ctx = {
         options,
         pkginfo: packageInfo,
-        params: calculateParams(options, packageInfo)
+        params
       }
 
       reply.header('cache-control', 'no-cache')

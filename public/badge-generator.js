@@ -45,8 +45,7 @@
   // Get selected options from the form
   function getSelectedOptions () {
     const styleRadios = document.querySelectorAll('input[name="style"]')
-    const starsCheckbox = document.querySelector('input[name="stars"]')
-    const downloadsCheckbox = document.querySelector('input[name="downloads"]')
+    const dataCheckboxes = document.querySelectorAll('input[name="data"]:checked')
 
     let style = 'standard'
     for (const radio of styleRadios) {
@@ -57,10 +56,39 @@
     }
 
     const params = []
-    if (style === 'compact') params.push('compact=true')
-    if (style === 'mini') params.push('mini=true')
-    if (style === 'standard' && starsCheckbox && starsCheckbox.checked) params.push('stars=true')
-    if (style === 'standard' && downloadsCheckbox && downloadsCheckbox.checked) params.push('downloads=true')
+
+    // Handle style parameter
+    if (style !== 'standard') {
+      params.push(`style=${style}`)
+    }
+
+    // Handle data parameter for all styles that support it
+    const dataValues = []
+    dataCheckboxes.forEach(checkbox => {
+      dataValues.push(checkbox.value)
+    })
+
+    if (dataValues.length > 0) {
+      // Convert to single-character aliases for compactness
+      const aliases = dataValues.map(v => {
+        switch (v) {
+          case 'name': return 'n'
+          case 'version': return 'v'
+          case 'updated': return 'u'
+          case 'downloads': return 'd'
+          case 'stars': return 's'
+          default: return v
+        }
+      })
+
+      // For shields/flat styles, use data parameter
+      if (['shields', 'flat', 'flat-square'].includes(style)) {
+        params.push(`data=${aliases.join(',')}`)
+      } else if (style === 'standard') {
+        // For standard style, also use data parameter
+        params.push(`data=${aliases.join(',')}`)
+      }
+    }
 
     return params.length > 0 ? '?' + params.join('&') : ''
   }
@@ -68,7 +96,8 @@
   // Update UI based on selected style
   function updateOptionsVisibility () {
     const styleRadios = document.querySelectorAll('input[name="style"]')
-    const standardOnlyOptions = document.querySelectorAll('.standard-only')
+    const dataOptionGroup = document.querySelector('.option-group:has(.data-options)') ||
+                           document.querySelectorAll('.option-group')[1] // Fallback for older browsers
 
     let selectedStyle = 'standard'
     for (const radio of styleRadios) {
@@ -78,17 +107,33 @@
       }
     }
 
-    // Show/hide stars and downloads options based on style
-    standardOnlyOptions.forEach(option => {
-      if (selectedStyle === 'standard') {
-        option.classList.remove('disabled')
-        option.querySelector('input').disabled = false
-      } else {
-        option.classList.add('disabled')
-        option.querySelector('input').disabled = true
-        option.querySelector('input').checked = false
-      }
-    })
+    // Show/hide data options based on style
+    if (['shields', 'flat', 'flat-square'].includes(selectedStyle)) {
+      // New styles support all data options
+      dataOptionGroup.style.display = 'flex'
+      // Reset visibility for all data options
+      document.querySelectorAll('.data-option').forEach(option => {
+        option.style.display = 'inline-block'
+      })
+    } else if (selectedStyle === 'standard') {
+      // Standard style only supports stars and downloads
+      dataOptionGroup.style.display = 'flex'
+      // Hide version, updated and name checkboxes for standard style
+      document.querySelectorAll('input[value="version"], input[value="updated"], input[value="name"]').forEach(checkbox => {
+        checkbox.parentElement.style.display = 'none'
+      })
+      // Show stars and downloads checkboxes
+      document.querySelectorAll('input[value="stars"], input[value="downloads"]').forEach(checkbox => {
+        checkbox.parentElement.style.display = 'inline-block'
+      })
+    } else {
+      // Compact and mini don't support data options - hide entire group
+      dataOptionGroup.style.display = 'none'
+      // Uncheck all data options
+      document.querySelectorAll('input[name="data"]').forEach(checkbox => {
+        checkbox.checked = false
+      })
+    }
   }
 
   // Generate embed code blocks
@@ -103,29 +148,69 @@
     }
   }
 
-  // Create badge section HTML
+  // Create badge section DOM element
   function createBadgeSection (title, packageName, params = '') {
     const { html, markdown } = generateEmbedCode(packageName, params)
     const imgUrl = `/npm/${packageName}.svg${params}`
+    const shortUrl = `nodei.co/npm/${packageName}.svg${params}`
 
-    return `
-      <div class="badge-variant">
-        <h4>${title}</h4>
-        <div class="badge-display">
-          <img src="${imgUrl}" alt="${title} badge">
-        </div>
-        <div class="embed-codes">
-          <div class="embed-code">
-            <h5>HTML</h5>
-            <pre><code>${html.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>
-          </div>
-          <div class="embed-code">
-            <h5>Markdown</h5>
-            <pre><code>${markdown}</code></pre>
-          </div>
-        </div>
-      </div>
-    `
+    // Create main container
+    const badgeResult = document.createElement('div')
+    badgeResult.className = 'badge-result'
+
+    // Create image container
+    const imageContainer = document.createElement('div')
+    imageContainer.style.textAlign = 'center'
+    imageContainer.style.marginBottom = '20px'
+
+    const img = document.createElement('img')
+    img.src = imgUrl
+    img.alt = title + ' badge'
+    imageContainer.appendChild(img)
+    badgeResult.appendChild(imageContainer)
+
+    // Create embed codes container
+    const embedCodes = document.createElement('div')
+    embedCodes.className = 'embed-codes'
+
+    // Helper function to create copy field sections
+    function createCopyField (labelText, value) {
+      const wrapper = document.createElement('div')
+      wrapper.className = labelText.toLowerCase() === 'url' ? 'url-display-wrapper' : 'code-display-wrapper'
+
+      const label = document.createElement('label')
+      label.textContent = labelText
+      wrapper.appendChild(label)
+
+      const copyWrapper = document.createElement('div')
+      copyWrapper.className = 'copy-field-wrapper'
+
+      const input = document.createElement('input')
+      input.type = 'text'
+      input.className = labelText.toLowerCase() === 'url' ? 'url-copy-field' : 'code-copy-field'
+      input.value = value
+      input.readOnly = true
+      input.addEventListener('click', function () { this.select() })
+      copyWrapper.appendChild(input)
+
+      const button = document.createElement('button')
+      button.className = 'copy-btn'
+      button.textContent = '📋'
+      button.title = 'Copy to clipboard'
+      button.addEventListener('click', function () { window.copyFieldValue(this) })
+      copyWrapper.appendChild(button)
+
+      wrapper.appendChild(copyWrapper)
+      return wrapper
+    }
+
+    // Add the three copy fields
+    embedCodes.appendChild(createCopyField('URL', shortUrl))
+    embedCodes.appendChild(createCopyField('HTML', html))
+    embedCodes.appendChild(createCopyField('Markdown', markdown))
+
+    badgeResult.appendChild(embedCodes)
+    return badgeResult
   }
 
   // Show error message
@@ -149,23 +234,44 @@
   function generateBadges (packageName) {
     const params = getSelectedOptions()
 
-    // Determine title based on selected options
-    let title = 'Standard Badge'
-    if (params.includes('compact=true')) {
-      title = 'Compact Badge'
-    } else if (params.includes('mini=true')) {
-      title = 'Mini Badge'
-    } else if (params.includes('stars=true') && params.includes('downloads=true')) {
-      title = 'Badge with Stars & Downloads'
-    } else if (params.includes('stars=true')) {
-      title = 'Badge with Stars'
-    } else if (params.includes('downloads=true')) {
-      title = 'Badge with Downloads'
+    // Get current style
+    const styleRadios = document.querySelectorAll('input[name="style"]')
+    let style = 'standard'
+    for (const radio of styleRadios) {
+      if (radio.checked) {
+        style = radio.value
+        break
+      }
     }
 
-    const html = createBadgeSection(title, packageName, params)
+    // Determine title based on style and options
+    let title = 'Standard Badge'
+    if (style === 'compact') {
+      title = 'Compact Badge'
+    } else if (style === 'mini') {
+      title = 'Mini Badge'
+    } else if (style === 'shields') {
+      title = 'Shields Style Badge'
+    } else if (style === 'flat') {
+      title = 'Flat Style Badge'
+    } else if (style === 'flat-square') {
+      title = 'Flat Square Style Badge'
+    } else if (style === 'standard') {
+      // For standard style, check if data options are selected
+      if (params.includes('stars=true') && params.includes('downloads=true')) {
+        title = 'Badge with Stars & Downloads'
+      } else if (params.includes('stars=true')) {
+        title = 'Badge with Stars'
+      } else if (params.includes('downloads=true')) {
+        title = 'Badge with Downloads'
+      }
+    }
 
-    badgeContainer.innerHTML = html
+    const badgeElement = createBadgeSection(title, packageName, params)
+
+    // Clear existing content and append new element
+    badgeContainer.textContent = ''
+    badgeContainer.appendChild(badgeElement)
     badgeContainer.style.display = 'block'
 
     // Update URL hash
@@ -218,6 +324,45 @@
     }
   }
 
+  // Copy field value function
+  window.copyFieldValue = function (button) {
+    const input = button.previousElementSibling
+    input.select()
+
+    try {
+      document.execCommand('copy')
+      // Show brief success feedback on button
+      const originalText = button.textContent
+      button.textContent = '✓'
+      button.style.backgroundColor = '#4caf50'
+      button.style.color = 'white'
+      setTimeout(() => {
+        button.textContent = originalText
+        button.style.backgroundColor = ''
+        button.style.color = ''
+      }, 1500)
+    } catch (err) {
+      console.error('Failed to copy:', err)
+    }
+  }
+
+  // Add smooth scrolling for CTA button
+  window.addEventListener('DOMContentLoaded', () => {
+    // Smooth scrolling for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault()
+        const target = document.querySelector(this.getAttribute('href'))
+        if (target) {
+          target.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          })
+        }
+      })
+    })
+  })
+
   // Initialize when DOM is ready
   document.addEventListener('DOMContentLoaded', function () {
     packageInput = document.querySelector('.package-input')
@@ -254,8 +399,8 @@
       })
     })
 
-    // Handle stars/downloads changes
-    document.querySelectorAll('input[name="stars"], input[name="downloads"]').forEach(checkbox => {
+    // Handle data option changes
+    document.querySelectorAll('input[name="data"]').forEach(checkbox => {
       checkbox.addEventListener('change', () => {
         if (packageInput.value && badgeContainer.style.display === 'block') {
           generateBadges(packageInput.value)

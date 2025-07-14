@@ -50,7 +50,8 @@ test('downloads option ignored in compact mode', async () => {
   assert.ok(response.body.includes('<svg'), 'contains SVG content')
   // Compact mode should not show downloads
   assert.ok(!response.body.includes('downloads/week'), 'does not contain download text in compact mode')
-  assert.ok(response.body.includes('height="43"'), 'maintains compact height')
+  assert.ok(!response.body.includes('dl/w'), 'does not contain download abbreviation in compact mode')
+  assert.ok(response.body.includes('height="43'), 'maintains compact height')
 
   await app.close()
 })
@@ -67,7 +68,8 @@ test('downloads option ignored in mini mode', async () => {
   assert.ok(response.body.includes('<svg'), 'contains SVG content')
   // Mini mode should not show downloads
   assert.ok(!response.body.includes('downloads/week'), 'does not contain download text in mini mode')
-  assert.ok(response.body.includes('height="22"'), 'maintains mini height')
+  assert.ok(!response.body.includes('dl/w'), 'does not contain download abbreviation in mini mode')
+  assert.ok(response.body.includes('height="20'), 'maintains mini height')
 
   await app.close()
 })
