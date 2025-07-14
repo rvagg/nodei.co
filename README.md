@@ -56,7 +56,7 @@ Replace `package-name` with your npm package name:
 ### Options
 
 - `?compact=true` - Compact badge size
-- `?mini=true` - Minimal badge size  
+- `?mini=true` - Minimal badge size
 - `?stars=true` - Include GitHub star count
 
 ### Scoped Packages

@@ -42,6 +42,55 @@
     }
   }
 
+  // Get selected options from the form
+  function getSelectedOptions () {
+    const styleRadios = document.querySelectorAll('input[name="style"]')
+    const starsCheckbox = document.querySelector('input[name="stars"]')
+    const downloadsCheckbox = document.querySelector('input[name="downloads"]')
+
+    let style = 'standard'
+    for (const radio of styleRadios) {
+      if (radio.checked) {
+        style = radio.value
+        break
+      }
+    }
+
+    const params = []
+    if (style === 'compact') params.push('compact=true')
+    if (style === 'mini') params.push('mini=true')
+    if (style === 'standard' && starsCheckbox && starsCheckbox.checked) params.push('stars=true')
+    if (style === 'standard' && downloadsCheckbox && downloadsCheckbox.checked) params.push('downloads=true')
+
+    return params.length > 0 ? '?' + params.join('&') : ''
+  }
+
+  // Update UI based on selected style
+  function updateOptionsVisibility () {
+    const styleRadios = document.querySelectorAll('input[name="style"]')
+    const standardOnlyOptions = document.querySelectorAll('.standard-only')
+
+    let selectedStyle = 'standard'
+    for (const radio of styleRadios) {
+      if (radio.checked) {
+        selectedStyle = radio.value
+        break
+      }
+    }
+
+    // Show/hide stars and downloads options based on style
+    standardOnlyOptions.forEach(option => {
+      if (selectedStyle === 'standard') {
+        option.classList.remove('disabled')
+        option.querySelector('input').disabled = false
+      } else {
+        option.classList.add('disabled')
+        option.querySelector('input').disabled = true
+        option.querySelector('input').checked = false
+      }
+    })
+  }
+
   // Generate embed code blocks
   function generateEmbedCode (packageName, params = '') {
     const baseUrl = 'https://nodei.co'
@@ -98,16 +147,23 @@
 
   // Generate badges for package
   function generateBadges (packageName) {
-    const sections = [
-      { title: 'Standard', params: '' },
-      { title: 'With Stars', params: '?stars=true' },
-      { title: 'Compact', params: '?compact=true' },
-      { title: 'Mini', params: '?mini=true' }
-    ]
+    const params = getSelectedOptions()
 
-    const html = sections.map(section =>
-      createBadgeSection(section.title, packageName, section.params)
-    ).join('')
+    // Determine title based on selected options
+    let title = 'Standard Badge'
+    if (params.includes('compact=true')) {
+      title = 'Compact Badge'
+    } else if (params.includes('mini=true')) {
+      title = 'Mini Badge'
+    } else if (params.includes('stars=true') && params.includes('downloads=true')) {
+      title = 'Badge with Stars & Downloads'
+    } else if (params.includes('stars=true')) {
+      title = 'Badge with Stars'
+    } else if (params.includes('downloads=true')) {
+      title = 'Badge with Downloads'
+    }
+
+    const html = createBadgeSection(title, packageName, params)
 
     badgeContainer.innerHTML = html
     badgeContainer.style.display = 'block'
@@ -174,6 +230,9 @@
       return
     }
 
+    // Initialize option visibility
+    updateOptionsVisibility()
+
     // Set up input handling with debouncing
     const debouncedLookup = debounce(handlePackageLookup, 300)
 
@@ -183,6 +242,25 @@
         e.preventDefault()
         handlePackageLookup()
       }
+    })
+
+    // Handle style changes
+    document.querySelectorAll('input[name="style"]').forEach(radio => {
+      radio.addEventListener('change', () => {
+        updateOptionsVisibility()
+        if (packageInput.value && badgeContainer.style.display === 'block') {
+          generateBadges(packageInput.value)
+        }
+      })
+    })
+
+    // Handle stars/downloads changes
+    document.querySelectorAll('input[name="stars"], input[name="downloads"]').forEach(checkbox => {
+      checkbox.addEventListener('change', () => {
+        if (packageInput.value && badgeContainer.style.display === 'block') {
+          generateBadges(packageInput.value)
+        }
+      })
     })
 
     // Handle initial hash if present

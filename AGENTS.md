@@ -6,7 +6,7 @@ SVG badge generator for npm packages. Example: `https://nodei.co/npm/express.svg
 ## Stack
 - **Server**: Fastify (ESM, Node 18+)
 - **Templates**: Native JS template strings
-- **Cache**: LRU in-memory (5min TTL)
+- **Cache**: LRU in-memory (docs: 5min, downloads: 60min)
 - **Tests**: Node.js built-in test runner
 - **Style**: Standard.js
 
@@ -42,16 +42,18 @@ docs/
 2. **Scoped packages** - Separate routes for @org/pkg
 3. **Width calc** - `chars * 7.2 + 3` (cross-platform)
 4. **Security** - Escape HTML, validate inputs, CSP headers
-5. **No download stats** - API defunct, /npm-dl/* returns 1x1 PNG
+5. **Download stats** - Available via ?downloads=true (uses npm API)
 6. **User route** - Fetches full package details
-7. **Legacy compat** - Old routes return valid images, not errors
+7. **Legacy compat** - /npm-dl/* returns 1x1 PNG (histograms removed)
 
 ## Environment Variables
+- `HOST` - Bind address (default: localhost, use 0.0.0.0 for all)
 - `PORT` - Server port (default: 3000)
 - `NODE_ENV` - 'production' or 'development' (affects logging)
 - `LOG_FILE` - Optional file path for logs
 - `CACHE_MAX_SIZE` - Max cached packages (default: 1000)
-- `CACHE_TTL_MINUTES` - Cache lifetime (default: 5)
+- `CACHE_DOCS_TTL_MINUTES` - Cache lifetime for package docs (default: 5)
+- `CACHE_DOWNLOADS_TTL_MINUTES` - Cache lifetime for download stats (default: 60)
 
 ## Commands
 ```bash
@@ -63,8 +65,14 @@ npm start         # Start server (PORT=3000)
 
 ## Testing
 - Uses Node.js test runner: `node --test`
-- 34 tests covering all routes
+- 42 tests covering all routes and features
 - Run specific: `node --test test/badge-test.js`
+
+## Badge Options
+- `?compact=true` - Compact layout
+- `?mini=true` - Minimal badge
+- `?stars=true` - Show GitHub stars
+- `?downloads=true` - Show weekly downloads (standard only)
 
 ## Don'ts
 - Don't add Canvas/native deps

@@ -1,0 +1,13 @@
+{
+  "watch": ["*.js", "lib/**/*.js", "public/**/*.js"],
+  "ext": "js,json",
+  "ignore": ["test/**/*", "node_modules/**/*"],
+  "execMap": {
+    "js": "node"
+  },
+  "env": {
+    "NODE_ENV": "development"
+  },
+  "restartable": "rs",
+  "verbose": false
+}

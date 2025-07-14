@@ -145,6 +145,58 @@ h3 {
   color: #adb5bd;
 }
 
+/* Badge options */
+.badge-options {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.option-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  padding: 6px 14px;
+  border-radius: 20px;
+  background: white;
+  border: 2px solid #e9ecef;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.option-label:hover {
+  border-color: #667eea;
+}
+
+.option-label input {
+  cursor: pointer;
+}
+
+.option-label input[type="radio"]:checked + span,
+.option-label input[type="checkbox"]:checked + span {
+  color: #667eea;
+  font-weight: 600;
+}
+
+.separator {
+  width: 1px;
+  height: 24px;
+  background: #e9ecef;
+}
+
+.option-label.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.option-label.disabled input {
+  cursor: not-allowed;
+}
+
 .status-messages {
   margin-top: 20px;
   min-height: 30px;
@@ -224,7 +276,7 @@ h3 {
     padding: 20px;
     margin-bottom: 20px;
   }
-  
+
   .embed-code pre {
     padding: 12px;
     font-size: 0.8rem;
@@ -273,7 +325,7 @@ h3 {
 /* Options section */
 .options-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: 20px;
 }
 
@@ -339,56 +391,66 @@ h3 {
   .container {
     padding: 0 16px;
   }
-  
+
   .hero {
     padding: 40px 0 30px;
     margin-bottom: 40px;
   }
-  
+
   .hero h1 {
     font-size: 3rem;
   }
-  
+
   .hero .tagline {
     font-size: 1.1rem;
   }
-  
+
   h2 {
     font-size: 2rem;
     margin-bottom: 30px;
   }
-  
+
   .example-grid {
     grid-template-columns: 1fr;
     gap: 20px;
   }
-  
+
   .example-item {
     padding: 20px 16px;
   }
-  
+
   .generator-section {
     padding: 40px 20px;
   }
-  
+
   .code-examples {
     gap: 20px;
   }
-  
+
   .code-block {
     padding: 20px;
   }
-  
+
   .code-block pre {
     padding: 16px;
     font-size: 0.8rem;
   }
-  
+
   .options-grid {
     grid-template-columns: 1fr;
     gap: 20px;
   }
-  
+
+  .badge-options {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .separator {
+    width: 100%;
+    height: 1px;
+  }
+
 .option-card {
     padding: 12px;
   }
@@ -398,15 +460,15 @@ h3 {
   .hero h1 {
     font-size: 2.5rem;
   }
-  
+
   .hero .tagline {
     font-size: 1rem;
   }
-  
+
   h2 {
     font-size: 1.75rem;
   }
-  
+
   .package-input {
     padding: 14px 16px;
     font-size: 1rem;

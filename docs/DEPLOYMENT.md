@@ -83,14 +83,14 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_cache_bypass $http_upgrade;
-        
+
         # Caching for static assets
         location ~* \.(css|js|ico)$ {
             proxy_pass http://localhost:9000;
             expires 1d;
             add_header Cache-Control "public, immutable";
         }
-        
+
         # Caching for badges
         location ~* \.(svg|png)$ {
             proxy_pass http://localhost:9000;
