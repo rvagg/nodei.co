@@ -166,6 +166,42 @@ export default function createServer () {
     }
   })
 
+  // Legacy download histogram routes - return transparent 1x1 pixel
+  const transparent1x1PNG = Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
+    'base64'
+  )
+
+  // Handle /npm-dl/* routes for backwards compatibility
+  fastify.get('/npm-dl/:pkg.png', async (request, reply) => {
+    const { pkg } = request.params
+    request.reqLog.info({
+      message: 'Legacy download histogram request',
+      package: pkg,
+      route: 'npm-dl'
+    })
+
+    reply.type('image/png')
+    reply.header('cache-control', 'public, max-age=86400') // Cache for 1 day
+    reply.header('x-deprecated', 'Download histograms are no longer available. This endpoint returns a transparent 1x1 pixel for backwards compatibility.')
+    return transparent1x1PNG
+  })
+
+  // Handle scoped packages in download routes
+  fastify.get('/npm-dl/:scope/:pkg.png', async (request, reply) => {
+    const pkg = `${request.params.scope}/${request.params.pkg}`
+    request.reqLog.info({
+      message: 'Legacy download histogram request',
+      package: pkg,
+      route: 'npm-dl-scoped'
+    })
+
+    reply.type('image/png')
+    reply.header('cache-control', 'public, max-age=86400') // Cache for 1 day
+    reply.header('x-deprecated', 'Download histograms are no longer available. This endpoint returns a transparent 1x1 pixel for backwards compatibility.')
+    return transparent1x1PNG
+  })
+
   // Badge route (SVG and PNG) - supports scoped packages like @org/package
   fastify.get('/npm/:scope/:pkg.svg', async (request, reply) => {
     const pkg = `${request.params.scope}/${request.params.pkg}`

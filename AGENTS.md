@@ -32,6 +32,7 @@ docs/
 ## Key Routes
 - `/npm/:pkg.svg` & `/npm/:scope/:pkg.svg` - Badges
 - `/npm/:pkg.png` - Returns SVG (legacy compat)
+- `/npm-dl/:pkg.png` - Returns 1x1 transparent PNG (legacy)
 - `/api/npm/info/:pkg` - Package JSON
 - `/~:user` - User's packages with details
 - `/_status` - Health check
@@ -41,8 +42,9 @@ docs/
 2. **Scoped packages** - Separate routes for @org/pkg
 3. **Width calc** - `chars * 7.2 + 3` (cross-platform)
 4. **Security** - Escape HTML, validate inputs, CSP headers
-5. **No download stats** - API defunct, removed
+5. **No download stats** - API defunct, /npm-dl/* returns 1x1 PNG
 6. **User route** - Fetches full package details
+7. **Legacy compat** - Old routes return valid images, not errors
 
 ## Environment Variables
 - `PORT` - Server port (default: 3000)
