@@ -40,12 +40,25 @@ export default function createServer () {
   // Request logging middleware
   fastify.addHook('onRequest', async (request, reply) => {
     request.reqLog = reqLog(randomUUID())
-    if (request.raw) {
-      request.reqLog.info(request.raw)
-    }
+
+    // Log request details
+    request.reqLog.info({
+      method: request.method,
+      url: request.url,
+      ip: request.ip,
+      userAgent: request.headers['user-agent']
+    })
 
     reply.header('x-startup', start)
     reply.header('x-powered-by', 'whatevs')
+  })
+
+  // Response logging
+  fastify.addHook('onResponse', async (request, reply) => {
+    request.reqLog.info({
+      statusCode: reply.statusCode,
+      responseTime: reply.elapsedTime
+    })
   })
 
   // Static file serving
@@ -100,7 +113,11 @@ export default function createServer () {
       reply.header('cache-control', 'no-cache')
       return data
     } catch (error) {
-      request.reqLog.error(error)
+      request.reqLog.error({
+        error: error.message,
+        package: pkg,
+        route: 'api-info-scoped'
+      })
       if (error.message.includes('404')) {
         reply.code(404)
         return { error: `Package not found: ${pkg}` }
@@ -135,7 +152,11 @@ export default function createServer () {
       reply.header('cache-control', 'no-cache')
       return data
     } catch (error) {
-      request.reqLog.error(error)
+      request.reqLog.error({
+        error: error.message,
+        package: pkg,
+        route: 'api-info'
+      })
       if (error.message.includes('404')) {
         reply.code(404)
         return { error: `Package not found: ${pkg}` }
@@ -189,7 +210,11 @@ export default function createServer () {
       reply.header('cache-control', 'no-cache')
       return html
     } catch (error) {
-      request.reqLog.error(error)
+      request.reqLog.error({
+        error: error.message,
+        user,
+        route: 'user-packages'
+      })
       if (error.message.includes('404')) {
         reply.code(404)
         return { error: `No packages found for user: ${user}` }
@@ -224,7 +249,11 @@ export default function createServer () {
       // Simple redirect to main page with hash
       reply.redirect(`/#${encodeURIComponent(pkg)}`, 302)
     } catch (error) {
-      request.reqLog.error(error)
+      request.reqLog.error({
+        error: error.message,
+        package: pkg,
+        route: 'package-redirect-scoped'
+      })
       if (error.message.includes('404')) {
         reply.code(404)
         return { error: `Package not found: ${pkg}` }
@@ -259,7 +288,11 @@ export default function createServer () {
       // Simple redirect to main page with hash
       reply.redirect(`/#${pkg}`, 302)
     } catch (error) {
-      request.reqLog.error(error)
+      request.reqLog.error({
+        error: error.message,
+        package: pkg,
+        route: 'package-redirect'
+      })
       if (error.message.includes('404')) {
         reply.code(404)
         return { error: `Package not found: ${pkg}` }
@@ -298,7 +331,11 @@ export default function createServer () {
 
       return renderBadge(ctx)
     } catch (error) {
-      request.reqLog.error(error)
+      request.reqLog.error({
+        error: error.message,
+        package: pkg,
+        route: 'badge'
+      })
       if (error.message.includes('404')) {
         reply.code(404)
         return { error: `Package not found: ${pkg}` }

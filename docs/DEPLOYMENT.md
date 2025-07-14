@@ -113,6 +113,8 @@ sudo journalctl -u nodeico -f
 sudo tail -f /var/log/nodeico/app.log
 ```
 
+See [LOGGING.md](LOGGING.md) for details on the log format and debugging tips.
+
 ### Log Rotation (Optional)
 
 If you're using LOG_FILE, configure log rotation to prevent disk space issues:
