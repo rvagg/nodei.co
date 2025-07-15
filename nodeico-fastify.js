@@ -98,12 +98,7 @@ export default function createServer () {
     }
 
     try {
-      const data = await new Promise((resolve, reject) => {
-        npmRegistry.getPackageInfo(pkg, {}, (err, result) => {
-          if (err) reject(err)
-          else resolve(result)
-        })
-      })
+      const data = await npmRegistry.getPackageInfo(pkg, {})
 
       if (!data) {
         reply.code(404)
@@ -137,12 +132,7 @@ export default function createServer () {
     }
 
     try {
-      const data = await new Promise((resolve, reject) => {
-        npmRegistry.getPackageInfo(pkg, {}, (err, result) => {
-          if (err) reject(err)
-          else resolve(result)
-        })
-      })
+      const data = await npmRegistry.getPackageInfo(pkg, {})
 
       if (!data) {
         reply.code(404)
@@ -233,7 +223,7 @@ export default function createServer () {
     }
 
     try {
-      const packages = await npmRegistry.getUserPackagesWithDetailsAsync(user)
+      const packages = await npmRegistry.getUserPackagesWithDetails(user)
 
       if (!packages || !packages.length) {
         reply.code(404)
@@ -270,12 +260,7 @@ export default function createServer () {
     }
 
     try {
-      const data = await new Promise((resolve, reject) => {
-        npmRegistry.getPackageInfo(pkg, {}, (err, result) => {
-          if (err) reject(err)
-          else resolve(result)
-        })
-      })
+      const data = await npmRegistry.getPackageInfo(pkg, {})
 
       if (!data) {
         reply.code(404)
@@ -309,12 +294,7 @@ export default function createServer () {
     }
 
     try {
-      const data = await new Promise((resolve, reject) => {
-        npmRegistry.getPackageInfo(pkg, {}, (err, result) => {
-          if (err) reject(err)
-          else resolve(result)
-        })
-      })
+      const data = await npmRegistry.getPackageInfo(pkg, {})
 
       if (!data) {
         reply.code(404)
