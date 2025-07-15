@@ -74,6 +74,14 @@ Badge styles are modular - each exports:
 }
 ```
 
+## Color Support
+- `?color=` parameter works for all badge styles
+- Named colors: `brightgreen`, `green`, `yellowgreen`, `yellow`, `orange`, `red`, `blue`, `lightgrey`
+- Hex colors: Any valid 3 or 6 digit hex (e.g., `#007ec6`)
+- Default: npm red (`#cb3837`)
+- For shields/flat styles: Colors data sections
+- For classic styles: Colors logo and border
+
 ## Security
 - **Input validation**: Package names, parameters
 - **Output escaping**: `escapeXml()` for SVG, `escapeHtml()` for HTML

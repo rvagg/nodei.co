@@ -205,6 +205,44 @@ h3 {
   justify-content: center;
   gap: 8px;
 }
+.color-options {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+.color-swatch-label {
+  position: relative;
+  cursor: pointer;
+}
+.color-swatch-label input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.color-swatch {
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: 2px solid transparent;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s;
+}
+.color-swatch:hover {
+  transform: scale(1.1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+.color-swatch-label input[type="radio"]:checked + .color-swatch {
+  border-color: #2c3e50;
+  box-shadow: 0 0 0 2px rgba(44, 62, 80, 0.2);
+  transform: scale(1.05);
+}
+.color-swatch-label input[type="radio"]:focus + .color-swatch {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
 
 .generator-form {
   max-width: 900px;

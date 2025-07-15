@@ -46,6 +46,7 @@
   function getSelectedOptions () {
     const styleRadios = document.querySelectorAll('input[name="style"]')
     const dataCheckboxes = document.querySelectorAll('input[name="data"]:checked')
+    const colorRadios = document.querySelectorAll('input[name="color"]')
 
     let style = 'standard'
     for (const radio of styleRadios) {
@@ -88,6 +89,18 @@
         // For standard style, also use data parameter
         params.push(`data=${aliases.join(',')}`)
       }
+    }
+
+    // Handle color parameter
+    let selectedColor = ''
+    for (const radio of colorRadios) {
+      if (radio.checked && radio.value) {
+        selectedColor = radio.value
+        break
+      }
+    }
+    if (selectedColor) {
+      params.push(`color=${selectedColor}`)
     }
 
     return params.length > 0 ? '?' + params.join('&') : ''
@@ -402,6 +415,15 @@
     // Handle data option changes
     document.querySelectorAll('input[name="data"]').forEach(checkbox => {
       checkbox.addEventListener('change', () => {
+        if (packageInput.value && badgeContainer.style.display === 'block') {
+          generateBadges(packageInput.value)
+        }
+      })
+    })
+
+    // Handle color changes
+    document.querySelectorAll('input[name="color"]').forEach(radio => {
+      radio.addEventListener('change', () => {
         if (packageInput.value && badgeContainer.style.display === 'block') {
           generateBadges(packageInput.value)
         }

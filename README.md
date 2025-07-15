@@ -64,6 +64,16 @@ Add package information with the `data` parameter. **Order matters** - data appe
 - `stars` or `s` - GitHub stars
 - `updated` or `u` - Last publish date
 
+### Color Options
+
+Customize badge colors with the `color` parameter:
+
+- Named colors: `brightgreen`, `green`, `yellowgreen`, `yellow`, `orange`, `red`, `blue`, `lightgrey`
+- Hex colors: Any valid hex color (e.g., `#007ec6`)
+- Default: npm red (`#cb3837`)
+
+Works with all badge styles, including classic badges where it changes the logo and border color.
+
 #### Examples
 
 ```markdown
@@ -78,6 +88,11 @@ Add package information with the `data` parameter. **Order matters** - data appe
 
 # Standard style with data
 [![NPM](https://nodei.co/npm/lodash.svg?data=s,d)](https://nodei.co/npm/lodash/)
+
+# Custom colors
+[![NPM](https://nodei.co/npm/axios.svg?style=shields&data=n,v&color=blue)](https://nodei.co/npm/axios/)
+[![NPM](https://nodei.co/npm/next.svg?style=flat&data=n,d&color=brightgreen)](https://nodei.co/npm/next/)
+[![NPM](https://nodei.co/npm/vite.svg?color=orange)](https://nodei.co/npm/vite/)
 ```
 
 ### URL Format
