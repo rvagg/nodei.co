@@ -1,0 +1,26 @@
+# Two jobs keep untrusted dependency analysis separate from the write token.
+# pull_request_target runs this base-branch workflow, and no PR code is
+# checked out or executed.
+name: depsound
+on:
+  pull_request_target:
+
+permissions: {}
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: rvagg/depsound-action@ee3236bca69f1f741c973e69037ef303f01044f8 # v0.3.4
+  post:
+    needs: review
+    if: ${{ always() && needs.review.result != 'cancelled' }}
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      checks: write
+      actions: read
+    steps:
+      - uses: rvagg/depsound-action/post@ee3236bca69f1f741c973e69037ef303f01044f8 # v0.3.4
