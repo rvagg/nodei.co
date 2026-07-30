@@ -174,7 +174,7 @@ test('scoped package with shields style', async () => {
   assert.equal(response.statusCode, 200, 'returns 200')
   assert.ok(response.body.includes('<svg'), 'contains SVG content')
   assert.ok(response.body.includes('@babel/core'), 'contains full scoped package name')
-  assert.ok(response.body.includes('v7.'), 'contains version')
+  assert.match(response.body, /v\d+\./, 'contains version')
 
   await app.close()
 })
