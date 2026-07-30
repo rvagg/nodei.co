@@ -329,7 +329,7 @@ export default function createServer () {
     }
 
     try {
-      const packageInfo = await pkginfo(request.reqLog, pkg, options)
+      const packageInfo = await pkginfo(pkg, options)
 
       // For shields/flat styles, we need to handle dimensions differently
       const styleName = options.style || 'standard'
