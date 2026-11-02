@@ -6,9 +6,9 @@
   "main": "nodeico-fastify.js",
   "author": "Rod Vagg <r@va.gg> (https://github.com/rvagg)",
   "dependencies": {
-    "@fastify/static": "^10.1.5",
-    "bole": "~6.0.12",
-    "fastify": "^5.12.5",
+    "@fastify/static": "^10.1.8",
+    "bole": "~6.0.13",
+    "fastify": "^5.12.7",
     "lru-cache": "^11.5.3"
   },
   "scripts": {
